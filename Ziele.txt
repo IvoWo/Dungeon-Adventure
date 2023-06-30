@@ -1,0 +1,2 @@
+will use this as Example for a Graph in Python
+https://stackoverflow.com/questions/19472530/representing-graphs-data-structure-in-python

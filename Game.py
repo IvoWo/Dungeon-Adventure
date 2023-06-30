@@ -40,6 +40,7 @@ class Map:
 class Room:
     # idea: Exits stores which rooms are connected to this room 
     # should propably also hold the asociated Items for the Room
+    
     Exits = []
     Itemlist = []
     
