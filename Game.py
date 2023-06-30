@@ -40,8 +40,10 @@ class Map:
 class Room:
     # intended to hold 4 Bools indicating wether there is a door in the direction ´
     # reads: North, East, South, West
+    # should propably also hold the asociated Items for the Room
     Exits = []
-
+    Itemlist = []
+    
     
     def __init__(self) -> None:
          self.generateRoom()
