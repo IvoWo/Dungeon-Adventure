@@ -7,3 +7,8 @@ Player1 = Player(Room)
 Player1.collectItem(Knife)
 Player1.collectItem(Pan)
 print(Player1.inspectInventory())
+
+Map = Map([("A", "B"), ("A", "C")])
+print(Map)
+Map.remove("A")
+print(Map)
