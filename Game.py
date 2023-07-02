@@ -1,5 +1,6 @@
 import pygame
 from sys import exit
+from GameAssets import *
 
 
 pygame.init()
@@ -11,10 +12,13 @@ PauseGame = False
 
 
 # instanciate groups
-herbivoreGroup = pygame.sprite.Group()
+#Groups
+player = pygame.sprite.GroupSingle()
+player.add(Player("Startroom"))
+
 
 # load background image
-# background_surf = pygame.transform.rotozoom(pygame.image.load('Pictures\ground.jpg').convert_alpha(), 0, 2)
+background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
 
 # game loop
 while True:
@@ -30,10 +34,10 @@ while True:
     else:
         
 
-        # screen.blit(background_surf, (0,0))
+        screen.blit(background_surf, (0,0))
         # animate groups
-        herbivoreGroup.draw(screen)
-        herbivoreGroup.update()
+        player.draw(screen)
+        player.update()
 
     pygame.display.update()
     clock.tick(60)

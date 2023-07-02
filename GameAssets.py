@@ -1,13 +1,23 @@
 from random import choice
 from collections import defaultdict
+from typing import Any
+import pygame
+
+class SpriteBaseClass(pygame.sprite.Sprite):
+    def __init__(self, PictureFilePath):
+        super().__init__()
+        self.image = pygame.image.load(PictureFilePath).convert_alpha()
+        self.rect = self.image.get_rect()
 
 
 
-class Player:
+class Player(SpriteBaseClass):
 
     Inventory = []
+    Movementspeed = 3
 
-    def __init__(self, startRoom) -> None:
+    def __init__(self, startRoom):
+        super().__init__("pictures/IvoCD.png")
         self.Room = startRoom
 
     def enterRoom(self, newRoom):
@@ -21,15 +31,33 @@ class Player:
         for Item in self.Inventory:
             Itemnames.append(Item.getName())
         return Itemnames
+    
+    def playerControll(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            self.rect.y += -self.Movementspeed
+        if keys[pygame.K_DOWN]:
+            self.rect.y += self.Movementspeed
+        if keys[pygame.K_LEFT]:
+            self.rect.x += -self.Movementspeed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.Movementspeed
+    
+    def update(self):
+        self.playerControll()
 
 
-class Item():
-    def __init__(self, Name, Description) -> None:
+class Item(SpriteBaseClass):
+    def __init__(self, Name, Description, pictureFilePath) -> None:
+        super().__init__(pictureFilePath)
         self.Description = Description
         self.Name = Name
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
+    
+    def getName(self):
+        return(self.Name)
 
 class Map():
     """ Graph data structure, undirected \n
@@ -72,30 +100,19 @@ class Map():
     def __str__(self):
         return '{}({})'.format(self.__class__.__name__, dict(self._graph))
     
-class Room:
+class Room(SpriteBaseClass):
     # idea: Exits stores which rooms are connected to this room 
     # should propably also hold the asociated Items for the Room
     
     Exits = []
     Itemlist = []
 
-    def __init__(self) -> None:
+    def __init__(self, pictureFilePath) -> None:
+         super().__init__(pictureFilePath)
          self.generateRoom()
 
     def generateRoom(self):
         pass
-
-class Item():
-    def __init__(self, Name:str, Description:str) -> None:
-        self.Description = Description
-        self.Name = Name
-    
-    def getDescription(self):
-        return(self.Name + ": " + self.Description)
-    
-    def getName(self):
-        return(self.Name)
-    
 
 class Itemholder():
     """A base class for storing item \n
