@@ -1,4 +1,4 @@
-from Game import *
+from GameAssets import *
 
 StartRoom = Room()
 Knife = Item("Knife", "usefull to cut stuff")
