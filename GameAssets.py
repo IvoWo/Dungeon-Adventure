@@ -9,8 +9,6 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
 
-
-
 class Player(SpriteBaseClass):
 
     Inventory = []
