@@ -1,0 +1,28 @@
+Ziele des Spiels?
+
+1 Design: Ein RT style dungeon crawler mit Räumen und Ebenen
+1.1 Gameplay: erkunden verschiedener Räume um voranzuschreiten, lösen von Puzzeln, bekömpfen von Gegnern
+              Bossfights?
+              gedroppte Items von Bossen / Gegnern können mitgenommen werden? Shops?
+1.2 Combat: RT(nicht turn based) mit Waffen für den Spieler 
+                  im Sinne von verschiedenen Nah/Fernkampfwaffen und Magie
+                  (magie als "Sonderfähigkeiten" oder Waffe(Stäbe?))
+1.3 Gamedesign: 
+
+
+2 Funktionierende basis Struktur
+2.1 Spieler:   kann Items nutzen/ ablegen?, hat map?,
+2.2 Raum: hat Ausgänge, hat Items(wie verteilt/ initialisiert)
+2.3 Gegner: droppen Items?
+
+3 Story
+3.1 Lore?: wie mitgeteilt?(notizen, andere interagierbare Objekte?), extra Kodex oder andere funktion?
+3.2 Story: storygetrieben oder nur am Rand?, was genau?, wie Dargestellt(kurze cuscenes?
+           (ich kann ein wenig schneiden und animieren))
+3.3 Charaktere: wer ist der Spieler?(festgelegt oder auswahl?), Hat er eine Feste Story?
+
+4 Erweiterte Gameplay Features
+4.1 Spieler: 
+    4.1.1 Visueller Inventar? 
+    4.1.2 Klassen? wenn ja, welche Unterschiede?
+    4.1.3 Rüstung? wenn ja, welche Veränderungen?, weniger Schaden direkt oder prozentual? (oder T vs S)?
