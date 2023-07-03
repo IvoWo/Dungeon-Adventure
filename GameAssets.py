@@ -15,6 +15,7 @@ class Player(SpriteBaseClass):
 
     Inventory = []
     Movementspeed = 3
+    health = 100
 
     def __init__(self, startRoom):
         super().__init__("pictures/IvoCD.png")
@@ -32,6 +33,11 @@ class Player(SpriteBaseClass):
             Itemnames.append(Item.getName())
         return Itemnames
     
+    def inspectItem(self, name):
+        for Item in self.Inventory:
+            if(Item.getName(self).str.lower() == name):
+                print(Item.getDescription(self))
+    
     def playerControll(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
@@ -45,6 +51,7 @@ class Player(SpriteBaseClass):
     
     def update(self):
         self.playerControll()
+        
 
 
 class Item(SpriteBaseClass):
