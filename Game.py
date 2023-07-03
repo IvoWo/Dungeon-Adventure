@@ -13,9 +13,10 @@ PauseGame = False
 # instanciate groups
 #Groups
 player = pygame.sprite.GroupSingle()
-player.add(Player("Startroom"))
-
-
+player1 = Player("Startraum")
+player.add(player1)
+test = Item('Testname', 'Testbeschreibung', 'pictures/blackBackground.png')
+player1.collectItem(test)
 # load background image
 background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
 
@@ -32,7 +33,6 @@ while True:
         pass
     else:
         
-
         screen.blit(background_surf, (0,0))
         # animate groups
         player.draw(screen)
@@ -40,4 +40,3 @@ while True:
 
     pygame.display.update()
     clock.tick(60)
-
