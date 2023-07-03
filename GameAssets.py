@@ -123,6 +123,7 @@ class Room(SpriteBaseClass):
     def generateRoom(self):
         pass
 
+#noch nicht ingame
 class Itemholder():
     """A base class for storing item \n
        Might be for a backpack, the players Inventory and the like"""
@@ -139,7 +140,8 @@ class Itemholder():
     
     def removeFromItemList(self, Item):
         self.Itemlist.remove(Item)
-    
+
+#noch nicht ingame
 class Enemy():
     """A placeholder class for enemys(for now)"""
     

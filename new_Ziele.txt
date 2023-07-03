@@ -7,7 +7,7 @@ Ziele des Spiels?
 1.2 Combat: RT(nicht turn based) mit Waffen für den Spieler 
                   im Sinne von verschiedenen Nah/Fernkampfwaffen und Magie
                   (magie als "Sonderfähigkeiten" oder Waffe(Stäbe?))
-1.3 Gamedesign: 
+1.3 Gamedesign: pixelig
 
 
 2 Funktionierende basis Struktur
