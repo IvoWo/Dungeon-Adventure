@@ -37,6 +37,9 @@ class Player(SpriteBaseClass):
         for Item in self.Inventory:
             if(Item.getName(self).str.lower() == name):
                 print(Item.getDescription(self))
+
+    def takeDamage(self, amount):
+        self.health -= amount
     
     def playerControll(self):
         keys = pygame.key.get_pressed()
@@ -51,7 +54,7 @@ class Player(SpriteBaseClass):
     
     def update(self):
         self.playerControll()
-        
+
 
 
 class Item(SpriteBaseClass):
@@ -113,6 +116,7 @@ class Room(SpriteBaseClass):
     
     Exits = []
     Itemlist = []
+    Enemies = []
 
     def __init__(self, pictureFilePath) -> None:
          super().__init__(pictureFilePath)
@@ -138,3 +142,12 @@ class Itemholder():
     def removeFromItemList(self, Item):
         self.Itemlist.remove(Item)
     
+class Enemy():
+    """A placeholder class for enemys(for now)"""
+    
+    def __init__(self, Health, Speed) -> None:
+        self.Health = Health
+        self.Movementspeed = Speed
+
+    def takeDamage(self, Amount):
+        Health -= Amount
