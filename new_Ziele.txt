@@ -7,12 +7,12 @@ Ziele des Spiels?
 1.2 Combat: RT(nicht turn based) mit Waffen für den Spieler 
                   im Sinne von verschiedenen Nah/Fernkampfwaffen und Magie
                   (magie als "Sonderfähigkeiten" oder Waffe(Stäbe?))
-1.3 Gamedesign: 
+1.3 Gamedesign: pixelig
 
 
 2 Funktionierende basis Struktur
 2.1 Spieler:   kann Items nutzen/ ablegen?, hat map?,
-2.2 Raum: hat Ausgänge, hat Items(wie verteilt/ initialisiert)
+2.2 Raum: hat Ausgänge, hat Items(wie verteilt/ initialisiert), Borders
 2.3 Gegner: droppen Items?
 
 3 Story
@@ -26,3 +26,9 @@ Ziele des Spiels?
     4.1.1 Visueller Inventar? 
     4.1.2 Klassen? wenn ja, welche Unterschiede?
     4.1.3 Rüstung? wenn ja, welche Veränderungen?, weniger Schaden direkt oder prozentual? (oder T vs S)?
+
+Sonstiges: 
+Highscores speichern: (Datenbank oder im Pythoncode), lokal auf PC 
+Namen für Entwicklerstudio
+Lademenü
+Borders

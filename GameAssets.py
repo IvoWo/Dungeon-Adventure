@@ -9,8 +9,10 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
 
-class Player(SpriteBaseClass):
 
+
+class Player(SpriteBaseClass):
+    
     Inventory = []
     Movementspeed = 3
     health = 100
@@ -49,6 +51,8 @@ class Player(SpriteBaseClass):
             self.rect.x += -self.Movementspeed
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
+        if keys[pygame.K_e]:
+            print(self.inspectInventory())
     
     def update(self):
         self.playerControll()
@@ -66,6 +70,8 @@ class Item(SpriteBaseClass):
     
     def getName(self):
         return(self.Name)
+
+
 
 class Map():
     """ Graph data structure, undirected \n
@@ -123,6 +129,7 @@ class Room(SpriteBaseClass):
     def generateRoom(self):
         pass
 
+#noch nicht ingame
 class Itemholder():
     """A base class for storing item \n
        Might be for a backpack, the players Inventory and the like"""
@@ -139,7 +146,8 @@ class Itemholder():
     
     def removeFromItemList(self, Item):
         self.Itemlist.remove(Item)
-    
+
+#noch nicht ingame
 class Enemy():
     """A placeholder class for enemys(for now)"""
     
