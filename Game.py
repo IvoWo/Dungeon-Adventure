@@ -14,9 +14,14 @@ font = pygame.font.SysFont("arialblack", 40)
 
 #define colors
 TEXT_COL = (255, 255, 255)
+#drawText("press Space to continue", font, TEXT_COL, 50, 250)
 
-Start_img = pygame.image.load('pictures/Start_Button.jpg').convert_alpha()
-start_button = Button(50, 240, Start_img, 0.5)
+Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
+Quit_img = pygame.image.load('pictures/Quit_Button.png').convert_alpha()
+Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
+continue_button = Button(200, 140, Continue_img, 1.5)
+quit_button = Button(228, 290,Quit_img, 1.5)
+options_button = Button(207, 190, Options_img, 1.5)
 
 def drawText(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -33,19 +38,22 @@ player1.collectItem(test)
 background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
 
 # game loop
-while True:
+run = True
+while run:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            run = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             PauseGame = not PauseGame
 
     if PauseGame:
-        drawText("press Space to continue", font, TEXT_COL, 50, 250)
-        if start_button.draw(screen):
+        if continue_button.draw(screen):
             PauseGame = not PauseGame
+        if options_button.draw(screen):
+            pass
+        if quit_button.draw(screen):
+            run = False
         pass
     else:
         
