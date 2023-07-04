@@ -30,12 +30,12 @@ class Player(SpriteBaseClass):
     def inspectInventory(self):
         Itemnames = []
         for Item in self.Inventory:
-            Itemnames.append(Item.getName())
+            Itemnames.append(Item.Name)
         return Itemnames
     
     def inspectItem(self, name):
         for Item in self.Inventory:
-            if(Item.getName(self).str.lower() == name):
+            if(Item.Name.str.lower() == name):
                 print(Item.getDescription(self))
 
     def takeDamage(self, amount):
