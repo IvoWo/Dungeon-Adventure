@@ -1,5 +1,6 @@
 from sys import exit
 from GameAssets import *
+from UI import *
 
 
 pygame.init()
@@ -11,7 +12,6 @@ PauseGame = False
 
 #define Fonts
 font = pygame.font.SysFont("arialblack", 40)
-
 #define colors
 TEXT_COL = (255, 255, 255)
 #drawText("press Space to continue", font, TEXT_COL, 50, 250)
@@ -19,9 +19,9 @@ TEXT_COL = (255, 255, 255)
 Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
 Quit_img = pygame.image.load('pictures/Quit_Button.png').convert_alpha()
 Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
-continue_button = Button(200, 140, Continue_img, 1.5)
-quit_button = Button(228, 290,Quit_img, 1.5)
-options_button = Button(207, 190, Options_img, 1.5)
+continue_button = Button.Button(200, 140, Continue_img, 1.5)
+quit_button = Button.Button(228, 290,Quit_img, 1.5)
+options_button = Button.Button(207, 190, Options_img, 1.5)
 
 def drawText(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
