@@ -73,23 +73,18 @@ class Player(SpriteBaseClass):
         self.playerControll()
         self.stayOnScreen()
 
-
-
 class Item(SpriteBaseClass):
-    def __init__(self, Name, Description, pictureFilePath) -> None:
-        super().__init__(pictureFilePath)
+    def __init__(self, Name, Description, PictureFilePath) -> None:
+        super().__init__(PictureFilePath)
         self.Description = Description
         self.Name = Name
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
-    
-    def getName(self):
-        return(self.Name)
-
-
 
 class Map():
+    #Map ist für die allgemeine Map - Verbindung der Räume
+    #finde zwei Klasse für ein und dasselbe nicth gut
     """ Graph data structure, undirected \n
         Connections look like: [(Room1, Room2), (Room2, Room3)]"""
 
@@ -138,8 +133,8 @@ class Room(SpriteBaseClass):
     Itemlist = []
     Enemies = []
 
-    def __init__(self, pictureFilePath) -> None:
-         super().__init__(pictureFilePath)
+    def __init__(self, PictureFilePath) -> None:
+         super().__init__(PictureFilePath)
          self.generateRoom()
 
     def generateRoom(self):
