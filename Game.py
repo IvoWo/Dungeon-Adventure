@@ -8,6 +8,7 @@ screen = pygame.display.set_mode(ScreenSize)
 pygame.display.set_caption('Dungeon-Adventure')
 clock = pygame.time.Clock()
 PauseGame = False
+MainMenu = False
 
 #define Fonts
 font = pygame.font.SysFont("arialblack", 40)
@@ -40,27 +41,29 @@ background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBac
 # game loop
 run = True
 while run:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            PauseGame = not PauseGame
-
-    if PauseGame:
-        if continue_button.draw(screen):
-            PauseGame = not PauseGame
-        if options_button.draw(screen):
-            pass
-        if quit_button.draw(screen):
-            run = False
+    if MainMenu:
         pass
     else:
-        
-        screen.blit(background_surf, (0,0))
-        # animate groups
-        player.draw(screen)
-        player.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                PauseGame = not PauseGame
 
-    pygame.display.update()
-    clock.tick(60)
+        if PauseGame:
+            if continue_button.draw(screen):
+                PauseGame = not PauseGame
+            if options_button.draw(screen):
+                pass
+            if quit_button.draw(screen):
+                run = False
+                pass
+        else:
+        
+            screen.blit(background_surf, (0,0))
+            # animate groups
+            player.draw(screen)
+            player.update()
+
+        pygame.display.update()
+        clock.tick(60)
