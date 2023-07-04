@@ -30,12 +30,12 @@ class Player(SpriteBaseClass):
     def inspectInventory(self):
         Itemnames = []
         for Item in self.Inventory:
-            Itemnames.append(Item.getName())
+            Itemnames.append(Item.Name)
         return Itemnames
     
     def inspectItem(self, name):
         for Item in self.Inventory:
-            if(Item.getName(self).str.lower() == name):
+            if(Item.Name.str.lower() == name):
                 print(Item.getDescription(self))
 
     def takeDamage(self, amount):
@@ -53,27 +53,38 @@ class Player(SpriteBaseClass):
             self.rect.x += self.Movementspeed
         if keys[pygame.K_e]:
             print(self.inspectInventory())
-    
+
+    def stayOnScreen(self):
+        '''prevents from leaving the screen'''
+        if self.rect.right > 600:
+            print(' X Border right')
+            self.rect.right = 600
+        if self.rect.left < 0:
+            print('X Border left')
+            self.rect.left = 0
+        if self.rect.bottom > 600:
+            print(' Y Border Bottom')
+            self.rect.bottom = 600
+        if self.rect.top < 0:
+            print('Y Border Top')
+            self.rect.top = 0
+
     def update(self):
         self.playerControll()
-
-
+        self.stayOnScreen()
 
 class Item(SpriteBaseClass):
-    def __init__(self, Name, Description, pictureFilePath) -> None:
-        super().__init__(pictureFilePath)
+    def __init__(self, Name, Description, PictureFilePath) -> None:
+        super().__init__(PictureFilePath)
         self.Description = Description
         self.Name = Name
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
-    
-    def getName(self):
-        return(self.Name)
-
-
 
 class Map():
+    #Map ist für die allgemeine Map - Verbindung der Räume
+    #finde zwei Klasse für ein und dasselbe nicth gut
     """ Graph data structure, undirected \n
         Connections look like: [(Room1, Room2), (Room2, Room3)]"""
 
@@ -122,8 +133,8 @@ class Room(SpriteBaseClass):
     Itemlist = []
     Enemies = []
 
-    def __init__(self, pictureFilePath) -> None:
-         super().__init__(pictureFilePath)
+    def __init__(self, PictureFilePath) -> None:
+         super().__init__(PictureFilePath)
          self.generateRoom()
 
     def generateRoom(self):
