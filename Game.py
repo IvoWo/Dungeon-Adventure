@@ -15,12 +15,12 @@ font = pygame.font.SysFont("arialblack", 40)
 #define colors
 TEXT_COL = (255, 255, 255)
 
+Start_img = pygame.image.load('pictures/Start_Button.jpg').convert_alpha()
+start_button = Button(50, 240, Start_img, 0.5)
+
 def drawText(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
-
-Start_img = pygame.image.load('pictures/Start_Button.jpg').convert_alpha()
-start_button = Button(50, 240, Start_img, 0.1)
 
 # instanciate groups
 #Groups
@@ -35,10 +35,6 @@ background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBac
 # game loop
 while True:
 
-    #wenn der Startbutton gedrückt wird mach was
-    if start_button.draw(screen):
-        PauseGame = not PauseGame
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -48,6 +44,8 @@ while True:
 
     if PauseGame:
         drawText("press Space to continue", font, TEXT_COL, 50, 250)
+        if start_button.draw(screen):
+            PauseGame = not PauseGame
         pass
     else:
         
