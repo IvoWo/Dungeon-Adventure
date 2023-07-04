@@ -53,9 +53,25 @@ class Player(SpriteBaseClass):
             self.rect.x += self.Movementspeed
         if keys[pygame.K_e]:
             print(self.inspectInventory())
-    
+
+    def stayOnScreen(self):
+        '''prevents from leaving the screen'''
+        if self.rect.right > 600:
+            print(' X Border right')
+            self.rect.right = 600
+        if self.rect.left < 0:
+            print('X Border left')
+            self.rect.left = 0
+        if self.rect.bottom > 600:
+            print(' Y Border Bottom')
+            self.rect.bottom = 600
+        if self.rect.top < 0:
+            print('Y Border Top')
+            self.rect.top = 0
+
     def update(self):
         self.playerControll()
+        self.stayOnScreen()
 
 
 
