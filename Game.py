@@ -49,13 +49,6 @@ while run:
     if MainMenu:
         pass
     else:
-        
-        screen.blit(background_surf, (0,0))
-        # animate groups
-        player.draw(screen)
-        player.update()
-        SwordGroup.draw(screen)
-        SwordGroup.update(player1.rect.center)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -71,11 +64,12 @@ while run:
                 run = False
                 pass
         else:
-        
             screen.blit(background_surf, (0,0))
             # animate groups
             player.draw(screen)
             player.update()
+            SwordGroup.draw(screen)
+            SwordGroup.update(player1.rect.center)
 
         pygame.display.update()
         clock.tick(60)
