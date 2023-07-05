@@ -31,12 +31,12 @@ class Player(SpriteBaseClass):
     def inspectInventory(self):
         Itemnames = []
         for Item in self.Inventory:
-            Itemnames.append(Item.getName())
+            Itemnames.append(Item.Name)
         return Itemnames
     
     def inspectItem(self, name):
         for Item in self.Inventory:
-            if(Item.getName(self).str.lower() == name):
+            if(Item.Name.str.lower() == name):
                 print(Item.getDescription(self))
 
     def takeDamage(self, amount):
@@ -74,10 +74,9 @@ class Player(SpriteBaseClass):
         self.playerControll()
         self.stayOnScreen()
 
-
 class Item(SpriteBaseClass):
-    def __init__(self, Name, Description, pictureFilePath) -> None:
-        super().__init__(pictureFilePath)
+    def __init__(self, Name, Description, PictureFilePath) -> None:
+        super().__init__(PictureFilePath)
         self.Description = Description
         self.Name = Name
     
@@ -152,6 +151,8 @@ class Weapon(Item):
             self.switchAnimationImage(self.AttackStartTime)
 
 class Map():
+    #Map ist für die allgemeine Map - Verbindung der Räume
+    #finde zwei Klasse für ein und dasselbe nicth gut
     """ Graph data structure, undirected \n
         Connections look like: [(Room1, Room2), (Room2, Room3)]"""
 
@@ -200,8 +201,8 @@ class Room(SpriteBaseClass):
     Itemlist = []
     Enemies = []
 
-    def __init__(self, pictureFilePath) -> None:
-         super().__init__(pictureFilePath)
+    def __init__(self, PictureFilePath) -> None:
+         super().__init__(PictureFilePath)
          self.generateRoom()
 
     def generateRoom(self):
@@ -236,32 +237,3 @@ class Enemy():
     def takeDamage(self, Amount):
         Health -= Amount
 
-#Button class
-class Button():
-    def __init__(self, x, y, image, scale) -> None:
-        width = image.get_width()
-        height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
-        self.clicked = False
-
-    def draw(self, surface):
-        action = False
-
-        #get mouse position
-        pos = pygame.mouse.get_pos()
-    
-        #check mouseover and clicked conditions
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: 
-                self.clicked = True
-                action = True
-
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-
-        #draw button on screen
-        surface.blit(self.image, (self.rect.x, self.rect.y))
-
-        return action
