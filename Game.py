@@ -24,11 +24,11 @@ Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
 Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
 Main_img = pygame.image.load('pictures/Main_Button.png').convert_alpha()
 
-continue_button = Button.Button(200, 170, Continue_img, 1.5)
-quit_button = Button.Button(228, 310,Quit_img, 1.5)
-options_button = Button.Button(207, 190, Options_img, 1.5)
-start_button = Button.Button(228, 130, Start_img, 1.5)
-main_button = Button.Button(200, 290, Main_img, 1.5)
+continue_button = Button.Button(250, 145, Continue_img, 1.5)
+quit_button = Button.Button(278, 240,Quit_img, 1.5)
+options_button = Button.Button(254, 190, Options_img, 1.5)
+start_button = Button.Button(268, 145, Start_img, 1.5)
+main_button = Button.Button(278, 240, Main_img, 1.5)
 
 def drawText(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -66,12 +66,13 @@ while run:
                  run = False
 
         if start_button.draw(screen):
+                PauseGame = False
                 MainMenu = False
 
         if options_button.draw(screen):
             print('not yet implemented')
 
-        #pygame.display.update()
+        pygame.display.update()
 
 
     else:
@@ -83,6 +84,7 @@ while run:
                 print('not yet implemented')
 
             if main_button.draw(screen):
+                pygame.time.wait(200)
                 MainMenu = True
 
         else:   
