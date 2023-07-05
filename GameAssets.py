@@ -2,9 +2,10 @@ from random import choice
 from collections import defaultdict
 from typing import Any
 import pygame
+import math
 
 class SpriteBaseClass(pygame.sprite.Sprite):
-    def __init__(self, PictureFilePath):
+    def __init__(self, PictureFilePath : str):
         super().__init__()
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
@@ -81,6 +82,73 @@ class Item(SpriteBaseClass):
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
+    
+    def getName(self):
+        return(self.Name)
+
+class Weapon(Item):
+    
+    # the hurtBoxGroup contains the sprites of the attack animation
+    # for example bullest, checking bullet collision can then be done be checking againt the whole group
+    HurtboxGroup = pygame.sprite.Group()
+    # the attack Animation contains several Images in a List, that are played in a loop when attacking
+    AttackAnimationImages = []
+    IsAttacking = False
+    AttackStartTime = 0
+
+    def __init__(self, Name, Description, pictureFilePath, Damage: int, AttackDurationInSeconds = 0.5) -> None:
+        super().__init__(Name, Description, pictureFilePath)
+        self.Damage = Damage
+        self.AttackDurationInSeconds = AttackDurationInSeconds
+        self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000
+        self.MillisecondsPerImage = 1000
+
+    def update(self, WeaponPosition):
+        self.updatePosition(WeaponPosition)
+        self.startAttack()
+        self.animateWeapon()
+
+    def addAnimationImages(self, *Images):
+        """pass in any amount of file location strings, seperate by comma \n
+           Example: addImages("pictures/pic1.png", "pictures/pic2.png", ...) """
+        for Image in Images:
+            self.AttackAnimationImages.append(pygame.image.load(Image))
+
+    def updatePosition(self, WeaponPosition):
+        self.rect.center = WeaponPosition
+    
+    # TO-DO: use MousePos to get the direction of the attack
+    def startAttack(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a] and not self.IsAttacking:
+            # MousePos = pygame.mouse.get_pos()
+            # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
+            # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
+            # # normalising the vector
+            # AttackDirection[0] = AttackDirection[0]/LenVector
+            # AttackDirection[1] = AttackDirection[1]/LenVector
+            self.IsAttacking = True
+
+    def createHurtbox(self):
+        pass
+
+    def switchAnimationImage(self, StartTime):
+        if len(self.AttackAnimationImages) > 0:
+            self.MillisecondsPerImage = self.AttackDurationInMilliseconds/len(self.AttackAnimationImages)
+        TimeDiff = pygame.time.get_ticks() - StartTime
+        if TimeDiff < self.AttackDurationInMilliseconds:
+            CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
+            self.image = self.AttackAnimationImages[CurrentImageNum]
+        else:
+            self.IsAttacking = False
+            self.AttackStartTime = 0
+            self.image = self.AttackAnimationImages[0]
+
+    def animateWeapon(self):
+        if not self.IsAttacking:
+            self.AttackStartTime = pygame.time.get_ticks()
+        else:
+            self.switchAnimationImage(self.AttackStartTime)
 
 class Map():
     #Map ist für die allgemeine Map - Verbindung der Räume
