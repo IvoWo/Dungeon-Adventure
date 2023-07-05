@@ -84,7 +84,6 @@ while run:
                 print('not yet implemented')
 
             if main_button.draw(screen):
-                pygame.time.wait(200)
                 MainMenu = True
 
         else:   

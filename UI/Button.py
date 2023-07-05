@@ -9,23 +9,40 @@ class Button():
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked = False
+        self.prev_mouse_state = False
 
     def draw(self, surface):
         action = False
-        
+
         #get mouse position
         pos = pygame.mouse.get_pos()
+        mouse_state = pygame.mouse.get_pressed()[0] == 1
+
+        # Check if mouse is over the button
+        if self.rect.collidepoint(pos):
+            # Check if mouse button is pressed down
+            if mouse_state and not self.prev_mouse_state:
+                self.clicked = True
 
         #check mouseover and clicked conditions
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: 
-                self.clicked = True
-                action = True
+        #if self.rect.collidepoint(pos):
+            #if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: 
+                #self.clicked = True
+                #action = True
 
-        if pygame.mouse.get_pressed()[0] == 0:
+         # Check if mouse button is released
+        if not mouse_state and self.prev_mouse_state:
+            if self.clicked:
+                action = True
             self.clicked = False
+
+        #if pygame.mouse.get_pressed()[0] == 0:
+            #self.clicked = False
 
         #draw button on screen
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
+         # Update previous mouse state
+        self.prev_mouse_state = mouse_state
+        
         return action
