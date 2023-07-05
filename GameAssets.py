@@ -16,11 +16,36 @@ class Player(SpriteBaseClass):
     
     Inventory = []
     Movementspeed = 3
-    health = 100
+    Health = 100
+    IsWalking = False
+    WalkStartTime = 0
 
+    RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png"), 
+                 "Walking": [pygame.image.load("pictures/SideWalk1.png"), pygame.image.load("pictures/SideWalk2.png")] }
+    
+    LeftFace = {"Default": pygame.transform.flip(pygame.image.load("pictures/SideWalk1.png"), True, False), 
+                 "Walking": [pygame.transform.flip(pygame.image.load("pictures/SideWalk1.png"), True, False), 
+                             pygame.transform.flip(pygame.image.load("pictures/SideWalk2.png"), True, False)] }
+    
+    FrontFace = {"Default": pygame.image.load("pictures/IvoCD.png"), 
+                 "Walking": [pygame.image.load("pictures/IvoCD.png")] }
+    
+    BackFace = {"Default": pygame.image.load("pictures/BackFace1.png"), 
+                 "Walking": [pygame.image.load("pictures/BackFace1.png")]}
+    
     def __init__(self, startRoom):
         super().__init__("pictures/IvoCD.png")
         self.Room = startRoom
+        self.WalkDurationInSeconds = 0.5
+        self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
+        self.MillisecondsPerImage = 1000
+        self.Facing = self.FrontFace
+        
+    def update(self):
+        self.playerControll()
+        self.animateWalk()
+        self.stayOnScreen()
+
 
     def enterRoom(self, newRoom):
         self.Room = newRoom
@@ -46,12 +71,16 @@ class Player(SpriteBaseClass):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             self.rect.y += -self.Movementspeed
+            self.Facing = self.BackFace
         if keys[pygame.K_DOWN]:
             self.rect.y += self.Movementspeed
+            self.Facing = self.FrontFace
         if keys[pygame.K_LEFT]:
             self.rect.x += -self.Movementspeed
+            self.Facing = self.LeftFace
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
+            self.Facing = self.RightFace
         if keys[pygame.K_e]:
             print(self.inspectInventory())
 
@@ -70,9 +99,24 @@ class Player(SpriteBaseClass):
             print('Y Border Top')
             self.rect.top = 0
 
-    def update(self):
-        self.playerControll()
-        self.stayOnScreen()
+    def switchWalkAnimationImage(self):
+        if len(self.Facing["Walking"]) > 0:
+            self.MillisecondsPerImage = self.WalkDurationInMilliseconds/len(self.Facing["Walking"])
+        TimeDiff = pygame.time.get_ticks() - self.WalkStartTime
+        if TimeDiff < self.WalkDurationInMilliseconds:
+            CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
+            self.image = self.Facing["Walking"][CurrentImageNum]
+        else:
+            self.IsWalking = False
+            self.WalkStartTime = 0
+
+
+    def animateWalk(self):
+        if not self.IsWalking:
+            self.WalkStartTime = pygame.time.get_ticks()
+            self.image = self.Facing["Default"]
+        else:
+            self.switchWalkAnimationImage()
 
 class Item(SpriteBaseClass):
     def __init__(self, Name, Description, PictureFilePath) -> None:
@@ -132,10 +176,10 @@ class Weapon(Item):
     def createHurtbox(self):
         pass
 
-    def switchAnimationImage(self, StartTime):
+    def switchAnimationImage(self):
         if len(self.AttackAnimationImages) > 0:
             self.MillisecondsPerImage = self.AttackDurationInMilliseconds/len(self.AttackAnimationImages)
-        TimeDiff = pygame.time.get_ticks() - StartTime
+        TimeDiff = pygame.time.get_ticks() - self.AttackStartTime
         if TimeDiff < self.AttackDurationInMilliseconds:
             CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
             self.image = self.AttackAnimationImages[CurrentImageNum]
@@ -148,7 +192,7 @@ class Weapon(Item):
         if not self.IsAttacking:
             self.AttackStartTime = pygame.time.get_ticks()
         else:
-            self.switchAnimationImage(self.AttackStartTime)
+            self.switchAnimationImage()
 
 class Map():
     #Map ist für die allgemeine Map - Verbindung der Räume
