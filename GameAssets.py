@@ -5,7 +5,7 @@ import pygame
 import math
 
 class SpriteBaseClass(pygame.sprite.Sprite):
-    def __init__(self, PictureFilePath):
+    def __init__(self, PictureFilePath : str):
         super().__init__()
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
@@ -96,10 +96,10 @@ class Weapon(Item):
     IsAttacking = False
     AttackStartTime = 0
 
-    def __init__(self, Name, Description, pictureFilePath, Damage: int) -> None:
+    def __init__(self, Name, Description, pictureFilePath, Damage: int, AttackDurationInSeconds = 0.5) -> None:
         super().__init__(Name, Description, pictureFilePath)
         self.Damage = Damage
-        self.AttackDurationInSeconds = 0.5
+        self.AttackDurationInSeconds = AttackDurationInSeconds
         self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
 

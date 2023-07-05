@@ -38,8 +38,8 @@ player1.collectItem(test)
 # load background image
 background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
 
-Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10)
-Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png")
+Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
+Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
 SwordGroup = pygame.sprite.Group()
 SwordGroup.add(Sword)
 
