@@ -1,6 +1,4 @@
-from random import choice
 from collections import defaultdict
-from typing import Any
 import pygame
 import math
 
@@ -9,6 +7,19 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
+
+def turnFace(Face):
+    turnFace = {}
+    for key in Face:
+        if hasattr(Face[key], '__iter__'):
+            ImageList = []
+            for Image in Face[key]:
+                ImageList.append(pygame.transform.flip(Image, True, False))
+            turnFace[key] = ImageList
+        else:
+            turnFace[key] = pygame.transform.flip(Face[key], True, False)
+    return turnFace
+
 
 
 
@@ -19,40 +30,44 @@ class Player(SpriteBaseClass):
     Health = 100
     IsWalking = False
     WalkStartTime = 0
-
-    RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png"), 
-                 "Walking": [pygame.image.load("pictures/SideWalk1.png"), pygame.image.load("pictures/SideWalk2.png")] }
-    
-    LeftFace = {"Default": pygame.transform.flip(pygame.image.load("pictures/SideWalk1.png"), True, False), 
-                 "Walking": [pygame.transform.flip(pygame.image.load("pictures/SideWalk1.png"), True, False), 
-                             pygame.transform.flip(pygame.image.load("pictures/SideWalk2.png"), True, False)] }
-    
-    FrontFace = {"Default": pygame.image.load("pictures/IvoCD.png"), 
-                 "Walking": [pygame.image.load("pictures/IvoCD.png")] }
-    
-    BackFace = {"Default": pygame.image.load("pictures/BackFace1.png"), 
-                 "Walking": [pygame.image.load("pictures/BackFace1.png")]}
+    ActiveItemSlot = pygame.sprite.Group()
     
     def __init__(self, startRoom):
         super().__init__("pictures/IvoCD.png")
         self.Room = startRoom
-        self.WalkDurationInSeconds = 0.5
+        self.WalkDurationInSeconds = 0.4
         self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
-        self.Facing = self.FrontFace
+        self.currentImageIndex = 0
+        self.RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png").convert_alpha(), 
+                    "Walking": [pygame.image.load("pictures/SideWalk1.png").convert_alpha(), pygame.image.load("pictures/SideWalk2.png").convert_alpha()] }
         
-    def update(self):
+        self.LeftFace = turnFace(self.RightFace)
+        
+        self.FrontFace = {"Default": pygame.image.load("pictures/IvoCD.png").convert_alpha(), 
+                    "Walking": [pygame.image.load("pictures/IvoCD.png").convert_alpha()] }
+        
+        self.BackFace = {"Default": pygame.image.load("pictures/BackFace1.png").convert_alpha(), 
+                    "Walking": [pygame.image.load("pictures/BackFace1.png").convert_alpha()]}
+        self.Facing = self.FrontFace
+
+    def update(self, Screen):
         self.playerControll()
         self.animateWalk()
+        self.animateActiveItem(Screen)
         self.stayOnScreen()
 
 
     def enterRoom(self, newRoom):
         self.Room = newRoom
     
-    def collectItem(self, Item):
-        self.Inventory.append(Item)
-
+    def collectItem(self):
+        Item =  pygame.sprite.spritecollideany(self, self.Room.Itemlist)
+        if Item:
+            self.Room.Itemlist.remove(Item)
+            if not self.ActiveItemSlot:
+                self.ActiveItemSlot.add(Item)
+                
     def inspectInventory(self):
         Itemnames = []
         for Item in self.Inventory:
@@ -68,21 +83,31 @@ class Player(SpriteBaseClass):
         self.health -= amount
     
     def playerControll(self):
+        self.IsWalking = False
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             self.rect.y += -self.Movementspeed
             self.Facing = self.BackFace
+            self.IsWalking = True
         if keys[pygame.K_DOWN]:
             self.rect.y += self.Movementspeed
             self.Facing = self.FrontFace
+            self.IsWalking = True
         if keys[pygame.K_LEFT]:
             self.rect.x += -self.Movementspeed
             self.Facing = self.LeftFace
+            self.IsWalking = True
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
             self.Facing = self.RightFace
+            self.IsWalking = True
         if keys[pygame.K_e]:
             print(self.inspectInventory())
+        if keys[pygame.K_q]:
+            self.collectItem()
+        if keys[pygame.K_a]:
+            for Item in self.ActiveItemSlot:
+                Item.useItem()
 
     def stayOnScreen(self):
         '''prevents from leaving the screen'''
@@ -100,23 +125,33 @@ class Player(SpriteBaseClass):
             self.rect.top = 0
 
     def switchWalkAnimationImage(self):
-        if len(self.Facing["Walking"]) > 0:
-            self.MillisecondsPerImage = self.WalkDurationInMilliseconds/len(self.Facing["Walking"])
-        TimeDiff = pygame.time.get_ticks() - self.WalkStartTime
-        if TimeDiff < self.WalkDurationInMilliseconds:
-            CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
-            self.image = self.Facing["Walking"][CurrentImageNum]
-        else:
-            self.IsWalking = False
-            self.WalkStartTime = 0
-
+        NumberOfImages = len(self.Facing["Walking"])
+        if  NumberOfImages> 1:
+            self.MillisecondsPerImage = self.WalkDurationInMilliseconds/NumberOfImages
+        TimeDiff =  pygame.time.get_ticks() -self.WalkStartTime
+        # print("msPerI:", self.MillisecondsPerImage, "TimeDiff:", TimeDiff)
+        if TimeDiff > self.MillisecondsPerImage:
+            self.currentImageIndex += 1
+            self.WalkStartTime = pygame.time.get_ticks()
+        if self.currentImageIndex > NumberOfImages-1:
+            self.currentImageIndex = 0
+        # print("current image Index:", self.currentImageIndex)
+        self.image = self.Facing["Walking"][self.currentImageIndex]
 
     def animateWalk(self):
+        # print("Is Walking:", self.IsWalking)
         if not self.IsWalking:
-            self.WalkStartTime = pygame.time.get_ticks()
             self.image = self.Facing["Default"]
+            self.WalkStartTime = pygame.time.get_ticks()
         else:
             self.switchWalkAnimationImage()
+    
+    def animateActiveItem(self, Screen):
+        if self.ActiveItemSlot:
+            for item in self.ActiveItemSlot:
+                item.rect.center = self.rect.center
+            self.ActiveItemSlot.update()
+            self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
     def __init__(self, Name, Description, PictureFilePath) -> None:
@@ -127,8 +162,8 @@ class Item(SpriteBaseClass):
     def getDescription(self):
         return(self.Name + ": " + self.Description)
     
-    def getName(self):
-        return(self.Name)
+    def useItem(self):
+        pass
 
 class Weapon(Item):
     
@@ -147,9 +182,7 @@ class Weapon(Item):
         self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
 
-    def update(self, WeaponPosition):
-        self.updatePosition(WeaponPosition)
-        self.startAttack()
+    def update(self):
         self.animateWeapon()
 
     def addAnimationImages(self, *Images):
@@ -157,21 +190,24 @@ class Weapon(Item):
            Example: addImages("pictures/pic1.png", "pictures/pic2.png", ...) """
         for Image in Images:
             self.AttackAnimationImages.append(pygame.image.load(Image))
-
-    def updatePosition(self, WeaponPosition):
-        self.rect.center = WeaponPosition
     
-    # TO-DO: use MousePos to get the direction of the attack
-    def startAttack(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and not self.IsAttacking:
-            # MousePos = pygame.mouse.get_pos()
-            # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
-            # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
-            # # normalising the vector
-            # AttackDirection[0] = AttackDirection[0]/LenVector
-            # AttackDirection[1] = AttackDirection[1]/LenVector
+    # # TO-DO: use MousePos to get the direction of the attack
+    # def startAttack(self):
+    #     keys = pygame.key.get_pressed()
+    #     if keys[pygame.K_a] and not self.IsAttacking:
+    #         # MousePos = pygame.mouse.get_pos()
+    #         # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
+    #         # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
+    #         # # normalising the vector
+    #         # AttackDirection[0] = AttackDirection[0]/LenVector
+    #         # AttackDirection[1] = AttackDirection[1]/LenVector
+    #         self.IsAttacking = True
+
+    def useItem(self):
+        super().useItem()
+        if not self.IsAttacking:
             self.IsAttacking = True
+
 
     def createHurtbox(self):
         pass
@@ -242,8 +278,8 @@ class Room(SpriteBaseClass):
     # should propably also hold the asociated Items for the Room
     
     Exits = []
-    Itemlist = []
-    Enemies = []
+    Itemlist = pygame.sprite.Group()
+    Enemies = pygame.sprite.Group()
 
     def __init__(self, PictureFilePath) -> None:
          super().__init__(PictureFilePath)

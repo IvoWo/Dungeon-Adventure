@@ -1,14 +1,20 @@
-from GameAssets import *
+import pygame
 
-StartRoom = Room()
-Knife = Item("Knife", "usefull to cut stuff")
-Pan = Item("Pan", "usefull to cook stuff")
-Player1 = Player(Room)
-Player1.collectItem(Knife)
-Player1.collectItem(Pan)
-print(Player1.inspectInventory())
+RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png"), 
+            "Walking": [pygame.image.load("pictures/SideWalk1.png"), pygame.image.load("pictures/SideWalk2.png")] }
 
-Map = Map([("A", "B"), ("A", "C")])
-print(Map)
-Map.remove("A")
-print(Map)
+def turnFace(Face):
+    turnFace = {}
+    for key in Face:
+        if hasattr(Face[key], '__iter__'):
+            ImageList = []
+            for Image in Face[key]:
+                ImageList.append(pygame.transform.flip(Image, True, False))
+            turnFace[key] = ImageList
+            print(key, ImageList)
+        else:
+            turnFace[key] = pygame.transform.flip(Face[key], True, False)
+            print(key, turnFace[key])
+
+LeftFace = turnFace(RightFace)
+print(LeftFace)
