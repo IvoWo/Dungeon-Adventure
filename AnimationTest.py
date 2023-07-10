@@ -23,7 +23,6 @@ Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
 Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
 Room1.Itemlist.add(Sword)
 
-print(player1.image)
 # game loop
 run = True
 while run:

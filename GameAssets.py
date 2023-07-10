@@ -28,15 +28,16 @@ class Player(SpriteBaseClass):
     Inventory = []
     Movementspeed = 3
     Health = 100
-    IsWalking = True
+    IsWalking = False
     WalkStartTime = 0
     
     def __init__(self, startRoom):
         super().__init__("pictures/IvoCD.png")
         self.Room = startRoom
-        self.WalkDurationInSeconds = 0.5
+        self.WalkDurationInSeconds = 1
         self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
+        self.currentImageIndex = 0
         self.RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png").convert_alpha(), 
                     "Walking": [pygame.image.load("pictures/SideWalk1.png").convert_alpha(), pygame.image.load("pictures/SideWalk2.png").convert_alpha()] }
         
@@ -77,19 +78,24 @@ class Player(SpriteBaseClass):
         self.health -= amount
     
     def playerControll(self):
+        self.IsWalking = False
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             self.rect.y += -self.Movementspeed
             self.Facing = self.BackFace
+            self.IsWalking = True
         if keys[pygame.K_DOWN]:
             self.rect.y += self.Movementspeed
             self.Facing = self.FrontFace
+            self.IsWalking = True
         if keys[pygame.K_LEFT]:
             self.rect.x += -self.Movementspeed
             self.Facing = self.LeftFace
+            self.IsWalking = True
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
             self.Facing = self.RightFace
+            self.IsWalking = True
         if keys[pygame.K_e]:
             print(self.inspectInventory())
         if keys[pygame.K_q]:
@@ -111,21 +117,28 @@ class Player(SpriteBaseClass):
             self.rect.top = 0
 
     def switchWalkAnimationImage(self):
-        if len(self.Facing["Walking"]) > 0:
-            self.MillisecondsPerImage = self.WalkDurationInMilliseconds/len(self.Facing["Walking"])
-        TimeDiff = pygame.time.get_ticks() - self.WalkStartTime
-        if TimeDiff < self.WalkDurationInMilliseconds:
-            CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
-            self.image = self.Facing["Walking"][CurrentImageNum]
-        else:
-            self.IsWalking = False
-            self.WalkStartTime = 0
+        NumberOfImages = len(self.Facing["Walking"])
+        if  NumberOfImages> 1:
+            self.MillisecondsPerImage = self.WalkDurationInMilliseconds/NumberOfImages
+        TimeDiff =  pygame.time.get_ticks() -self.WalkStartTime
+        # print("msPerI:", self.MillisecondsPerImage, "TimeDiff:", TimeDiff)
+        if TimeDiff > self.MillisecondsPerImage:
+            self.currentImageIndex += 1
+            self.WalkStartTime = pygame.time.get_ticks()
+        if self.currentImageIndex > NumberOfImages-1:
+            self.currentImageIndex = 0
+        print("current image Index:", self.currentImageIndex)
+        self.image = self.Facing["Walking"][self.currentImageIndex]
+
+        
+
 
 
     def animateWalk(self):
+        # print("Is Walking:", self.IsWalking)
         if not self.IsWalking:
-            self.WalkStartTime = pygame.time.get_ticks()
             self.image = self.Facing["Default"]
+            self.WalkStartTime = pygame.time.get_ticks()
         else:
             self.switchWalkAnimationImage()
 
