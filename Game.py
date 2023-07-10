@@ -92,7 +92,7 @@ while run:
             screen.blit(background_surf, (0,0))
             # animate groups
             player.draw(screen)
-            player.update()
+            player.update(screen)
             Room1.Itemlist.draw(screen)
             Room1.Itemlist.update()
 

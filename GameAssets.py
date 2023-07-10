@@ -30,11 +30,12 @@ class Player(SpriteBaseClass):
     Health = 100
     IsWalking = False
     WalkStartTime = 0
+    ActiveItemSlot = pygame.sprite.Group()
     
     def __init__(self, startRoom):
         super().__init__("pictures/IvoCD.png")
         self.Room = startRoom
-        self.WalkDurationInSeconds = 1
+        self.WalkDurationInSeconds = 0.4
         self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
         self.currentImageIndex = 0
@@ -50,9 +51,10 @@ class Player(SpriteBaseClass):
                     "Walking": [pygame.image.load("pictures/BackFace1.png").convert_alpha()]}
         self.Facing = self.FrontFace
 
-    def update(self):
+    def update(self, Screen):
         self.playerControll()
         self.animateWalk()
+        self.animateActiveItem(Screen)
         self.stayOnScreen()
 
 
@@ -60,9 +62,17 @@ class Player(SpriteBaseClass):
         self.Room = newRoom
     
     def collectItem(self):
-        if pygame.sprite.spritecollideany(self, self.Room.Itemlist):
-            self.Inventory.append(pygame.sprite.spritecollideany(self, self.Room.Itemlist))
-
+        Item =  pygame.sprite.spritecollideany(self, self.Room.Itemlist)
+        if Item:
+            self.Room.Itemlist.remove(Item)
+            if not self.ActiveItemSlot:
+                self.ActiveItemSlot.add(Item)
+        # else:
+        #     if self.ActiveItemSlot:
+        #         for Item in self.ActiveItemSlot:
+        #             self.Room.Itemlist.add(Item)
+        #             self.ActiveItemSlot.remove(Item)
+                
     def inspectInventory(self):
         Itemnames = []
         for Item in self.Inventory:
@@ -127,10 +137,16 @@ class Player(SpriteBaseClass):
             self.WalkStartTime = pygame.time.get_ticks()
         if self.currentImageIndex > NumberOfImages-1:
             self.currentImageIndex = 0
-        print("current image Index:", self.currentImageIndex)
+        # print("current image Index:", self.currentImageIndex)
         self.image = self.Facing["Walking"][self.currentImageIndex]
 
-        
+    def animateActiveItem(self, Screen):
+        if self.ActiveItemSlot:
+            for item in self.ActiveItemSlot:
+                item.rect.center = self.rect.center
+            self.ActiveItemSlot.update()
+            self.ActiveItemSlot.draw(Screen)
+
 
 
 

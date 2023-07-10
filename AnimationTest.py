@@ -32,7 +32,7 @@ while run:
 
     screen.blit(background_surf, (0,0))
     playerGroup.draw(screen)
-    playerGroup.update()
+    playerGroup.update(screen)
     Room1.Itemlist.draw(screen)
     Room1.Itemlist.update()
 
