@@ -3,4 +3,5 @@
     (if you dont like it go yell at the head of design)
 
 Dungeon Adventure takes Place in a medival world with magic(classic).
-The protagonist is sent into the world to defeat dungeons(why?)
+The protagonist is sent into the world to defeat dungeonsand beat the 
+RED COWLS, who are up to no good.
