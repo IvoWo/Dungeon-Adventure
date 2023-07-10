@@ -1,6 +1,4 @@
-from random import choice
 from collections import defaultdict
-from typing import Any
 import pygame
 import math
 
@@ -17,21 +15,8 @@ class Player(SpriteBaseClass):
     Inventory = []
     Movementspeed = 3
     Health = 100
-    IsWalking = False
+    IsWalking = True
     WalkStartTime = 0
-
-    RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png"), 
-                 "Walking": [pygame.image.load("pictures/SideWalk1.png"), pygame.image.load("pictures/SideWalk2.png")] }
-    
-    LeftFace = {"Default": pygame.transform.flip(pygame.image.load("pictures/SideWalk1.png"), True, False), 
-                 "Walking": [pygame.transform.flip(pygame.image.load("pictures/SideWalk1.png"), True, False), 
-                             pygame.transform.flip(pygame.image.load("pictures/SideWalk2.png"), True, False)] }
-    
-    FrontFace = {"Default": pygame.image.load("pictures/IvoCD.png"), 
-                 "Walking": [pygame.image.load("pictures/IvoCD.png")] }
-    
-    BackFace = {"Default": pygame.image.load("pictures/BackFace1.png"), 
-                 "Walking": [pygame.image.load("pictures/BackFace1.png")]}
     
     def __init__(self, startRoom):
         super().__init__("pictures/IvoCD.png")
@@ -39,19 +24,30 @@ class Player(SpriteBaseClass):
         self.WalkDurationInSeconds = 0.5
         self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
-        self.Facing = self.FrontFace
+        self.RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png").convert_alpha(), 
+                    "Walking": [pygame.image.load("pictures/SideWalk1.png").convert_alpha(), pygame.image.load("pictures/SideWalk2.png").convert_alpha()] }
         
+        self.LeftFace = turnFace(self.RightFace)
+        
+        self.FrontFace = {"Default": pygame.image.load("pictures/IvoCD.png").convert_alpha(), 
+                    "Walking": [pygame.image.load("pictures/IvoCD.png").convert_alpha()] }
+        
+        self.BackFace = {"Default": pygame.image.load("pictures/BackFace1.png").convert_alpha(), 
+                    "Walking": [pygame.image.load("pictures/BackFace1.png").convert_alpha()]}
+        self.Facing = self.FrontFace
+
     def update(self):
         self.playerControll()
-        self.animateWalk()
+        # self.animateWalk()
         self.stayOnScreen()
 
 
     def enterRoom(self, newRoom):
         self.Room = newRoom
     
-    def collectItem(self, Item):
-        self.Inventory.append(Item)
+    def collectItem(self):
+        if pygame.sprite.spritecollideany(self, self.Room.Itemlist):
+            self.Inventory.append(pygame.sprite.spritecollideany(self, self.Room.Itemlist))
 
     def inspectInventory(self):
         Itemnames = []
@@ -83,6 +79,8 @@ class Player(SpriteBaseClass):
             self.Facing = self.RightFace
         if keys[pygame.K_e]:
             print(self.inspectInventory())
+        if keys[pygame.K_q]:
+            self.collectItem()
 
     def stayOnScreen(self):
         '''prevents from leaving the screen'''
@@ -127,8 +125,8 @@ class Item(SpriteBaseClass):
     def getDescription(self):
         return(self.Name + ": " + self.Description)
     
-    def getName(self):
-        return(self.Name)
+    def useItem(self):
+        pass
 
 class Weapon(Item):
     
@@ -147,8 +145,8 @@ class Weapon(Item):
         self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
 
-    def update(self, WeaponPosition):
-        self.updatePosition(WeaponPosition)
+    def update(self):
+        super().useItem()
         self.startAttack()
         self.animateWeapon()
 
@@ -157,9 +155,6 @@ class Weapon(Item):
            Example: addImages("pictures/pic1.png", "pictures/pic2.png", ...) """
         for Image in Images:
             self.AttackAnimationImages.append(pygame.image.load(Image))
-
-    def updatePosition(self, WeaponPosition):
-        self.rect.center = WeaponPosition
     
     # TO-DO: use MousePos to get the direction of the attack
     def startAttack(self):
@@ -242,8 +237,8 @@ class Room(SpriteBaseClass):
     # should propably also hold the asociated Items for the Room
     
     Exits = []
-    Itemlist = []
-    Enemies = []
+    Itemlist = pygame.sprite.Group()
+    Enemies = pygame.sprite.Group()
 
     def __init__(self, PictureFilePath) -> None:
          super().__init__(PictureFilePath)

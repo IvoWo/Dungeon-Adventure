@@ -24,6 +24,10 @@ Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
 Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
 Main_img = pygame.image.load('pictures/Main_Button.png').convert_alpha()
 
+# load background image
+background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
+background_Main = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+
 continue_button = Button.Button(250, 145, Continue_img, 1.5)
 quit_button = Button.Button(278, 240,Quit_img, 1.5)
 options_button = Button.Button(254, 190, Options_img, 1.5)
@@ -34,21 +38,19 @@ def drawText(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
 
-# instanciate groups
-#Groups
+# instanciate Objects
+
+Room1 = Room('pictures/blackBackground.png')
+
+
 player = pygame.sprite.GroupSingle()
-player1 = Player("Startraum")
+player1 = Player(Room1)
 player.add(player1)
-test = Item('Testname', 'Testbeschreibung', 'pictures/blackBackground.png')
-player1.collectItem(test)
-# load background image
-background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
-background_Main = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+
 
 Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
 Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
-SwordGroup = pygame.sprite.Group()
-SwordGroup.add(Sword)
+Room1.Itemlist.add(Sword)
 
 # game loop
 run = True
@@ -92,8 +94,8 @@ while run:
             # animate groups
             player.draw(screen)
             player.update()
-            SwordGroup.draw(screen)
-            SwordGroup.update(player1.rect.center)
+            Room1.Itemlist.draw(screen)
+            Room1.Itemlist.update()
 
     pygame.display.update()
     clock.tick(60)
