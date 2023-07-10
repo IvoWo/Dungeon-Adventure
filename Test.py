@@ -1,23 +1,20 @@
-import math   
 import pygame
 
-class Animation():
+RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png"), 
+            "Walking": [pygame.image.load("pictures/SideWalk1.png"), pygame.image.load("pictures/SideWalk2.png")] }
 
-    def __init__(self,AnimationTimeInMilliseconds = 1000, ImageList = []) -> None:
-        self.AnimationTimeInMilliseconds = AnimationTimeInMilliseconds
-        self.ImageList = ImageList
+def turnFace(Face):
+    turnFace = {}
+    for key in Face:
+        if hasattr(Face[key], '__iter__'):
+            ImageList = []
+            for Image in Face[key]:
+                ImageList.append(pygame.transform.flip(Image, True, False))
+            turnFace[key] = ImageList
+            print(key, ImageList)
+        else:
+            turnFace[key] = pygame.transform.flip(Face[key], True, False)
+            print(key, turnFace[key])
 
-    def startAnimation(self):
-        self.StartTime = pygame.time.get_ticks()
-        self.UpdateImage()
-
-    def updateImage(self):
-            if len(self.ImageList) > 0:
-                MillisecondsPerImage = self.AnimationTimeInMilliseconds/len(self.ImageList)
-            TimeDiff = pygame.time.get_ticks() - self.StartTime
-            if TimeDiff < self.AnimationTimeInMilliseconds:
-                CurrentImageNum = math.floor(TimeDiff/MillisecondsPerImage)
-                image = self.ImageList[CurrentImageNum]
-                return image
-            else:
-                self.StartTime = 0
+LeftFace = turnFace(RightFace)
+print(LeftFace)

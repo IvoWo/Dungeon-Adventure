@@ -8,6 +8,19 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
 
+def turnFace(Face):
+    turnFace = {}
+    for key in Face:
+        if hasattr(Face[key], '__iter__'):
+            ImageList = []
+            for Image in Face[key]:
+                ImageList.append(pygame.transform.flip(Image, True, False))
+            turnFace[key] = ImageList
+        else:
+            turnFace[key] = pygame.transform.flip(Face[key], True, False)
+    return turnFace
+
+
 
 
 class Player(SpriteBaseClass):
@@ -38,7 +51,7 @@ class Player(SpriteBaseClass):
 
     def update(self):
         self.playerControll()
-        # self.animateWalk()
+        self.animateWalk()
         self.stayOnScreen()
 
 
