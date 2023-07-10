@@ -67,11 +67,6 @@ class Player(SpriteBaseClass):
             self.Room.Itemlist.remove(Item)
             if not self.ActiveItemSlot:
                 self.ActiveItemSlot.add(Item)
-        # else:
-        #     if self.ActiveItemSlot:
-        #         for Item in self.ActiveItemSlot:
-        #             self.Room.Itemlist.add(Item)
-        #             self.ActiveItemSlot.remove(Item)
                 
     def inspectInventory(self):
         Itemnames = []
@@ -110,6 +105,9 @@ class Player(SpriteBaseClass):
             print(self.inspectInventory())
         if keys[pygame.K_q]:
             self.collectItem()
+        if keys[pygame.K_a]:
+            for Item in self.ActiveItemSlot:
+                Item.useItem()
 
     def stayOnScreen(self):
         '''prevents from leaving the screen'''
@@ -140,16 +138,6 @@ class Player(SpriteBaseClass):
         # print("current image Index:", self.currentImageIndex)
         self.image = self.Facing["Walking"][self.currentImageIndex]
 
-    def animateActiveItem(self, Screen):
-        if self.ActiveItemSlot:
-            for item in self.ActiveItemSlot:
-                item.rect.center = self.rect.center
-            self.ActiveItemSlot.update()
-            self.ActiveItemSlot.draw(Screen)
-
-
-
-
     def animateWalk(self):
         # print("Is Walking:", self.IsWalking)
         if not self.IsWalking:
@@ -157,6 +145,13 @@ class Player(SpriteBaseClass):
             self.WalkStartTime = pygame.time.get_ticks()
         else:
             self.switchWalkAnimationImage()
+    
+    def animateActiveItem(self, Screen):
+        if self.ActiveItemSlot:
+            for item in self.ActiveItemSlot:
+                item.rect.center = self.rect.center
+            self.ActiveItemSlot.update()
+            self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
     def __init__(self, Name, Description, PictureFilePath) -> None:
@@ -188,8 +183,6 @@ class Weapon(Item):
         self.MillisecondsPerImage = 1000
 
     def update(self):
-        super().useItem()
-        self.startAttack()
         self.animateWeapon()
 
     def addAnimationImages(self, *Images):
@@ -198,17 +191,23 @@ class Weapon(Item):
         for Image in Images:
             self.AttackAnimationImages.append(pygame.image.load(Image))
     
-    # TO-DO: use MousePos to get the direction of the attack
-    def startAttack(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and not self.IsAttacking:
-            # MousePos = pygame.mouse.get_pos()
-            # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
-            # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
-            # # normalising the vector
-            # AttackDirection[0] = AttackDirection[0]/LenVector
-            # AttackDirection[1] = AttackDirection[1]/LenVector
+    # # TO-DO: use MousePos to get the direction of the attack
+    # def startAttack(self):
+    #     keys = pygame.key.get_pressed()
+    #     if keys[pygame.K_a] and not self.IsAttacking:
+    #         # MousePos = pygame.mouse.get_pos()
+    #         # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
+    #         # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
+    #         # # normalising the vector
+    #         # AttackDirection[0] = AttackDirection[0]/LenVector
+    #         # AttackDirection[1] = AttackDirection[1]/LenVector
+    #         self.IsAttacking = True
+
+    def useItem(self):
+        super().useItem()
+        if not self.IsAttacking:
             self.IsAttacking = True
+
 
     def createHurtbox(self):
         pass
