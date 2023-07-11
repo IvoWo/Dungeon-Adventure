@@ -30,7 +30,7 @@ Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
 Main_img = pygame.image.load('pictures/Main_Button.png').convert_alpha()
 
 # load background image
-background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
+background_surf = pygame.transform.rotozoom(pygame.image.load('pictures/map.jpg').convert_alpha(), 0, 0.5)
 background_Main = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
 
 continue_button = Button.Button(250, 145, Continue_img, 1.5)
