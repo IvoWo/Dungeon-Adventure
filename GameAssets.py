@@ -72,6 +72,8 @@ class Player(SpriteBaseClass):
         Itemnames = []
         for Item in self.Inventory:
             Itemnames.append(Item.Name)
+        for Item in self.ActiveItemSlot:
+            Itemnames.append(Item.Name)
         return Itemnames
     
     def inspectItem(self, name):
@@ -189,7 +191,7 @@ class Weapon(Item):
         """pass in any amount of file location strings, seperate by comma \n
            Example: addImages("pictures/pic1.png", "pictures/pic2.png", ...) """
         for Image in Images:
-            self.AttackAnimationImages.append(pygame.image.load(Image))
+            self.AttackAnimationImages.append(pygame.image.load(Image).convert_alpha())
     
     # # TO-DO: use MousePos to get the direction of the attack
     # def startAttack(self):

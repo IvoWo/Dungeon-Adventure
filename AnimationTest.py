@@ -21,7 +21,13 @@ playerGroup.add(player1)
 
 Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
 Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
-Room1.Itemlist.add(Sword)
+
+Potion = Weapon("Potion", "consumable","pictures/potion1.png", 1 )
+Potion.addAnimationImages("pictures/potion1.png", "pictures/potion2.png", "pictures/potion3.png")
+Potion.rect.center = (200, 200)
+Room1.Itemlist.add(Sword, Potion)
+
+
 
 # game loop
 run = True
