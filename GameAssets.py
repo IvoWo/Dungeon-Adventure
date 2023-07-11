@@ -1,12 +1,24 @@
 from collections import defaultdict
+import random
 import pygame
 import math
+from random import randrange
 
 class SpriteBaseClass(pygame.sprite.Sprite):
     def __init__(self, PictureFilePath : str):
         super().__init__()
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
         self.rect = self.image.get_rect()
+
+
+class Obstacle(SpriteBaseClass):
+    def __init__(self, image, x, y) -> None:
+        super().__init__(image)
+        self.rect.center = (x,y)
+        
+class Rock(Obstacle):
+    def __init__(self, x, y):
+        super().__init__("pictures/rock.png", x, y)
 
 def turnFace(Face):
     turnFace = {}
@@ -19,9 +31,6 @@ def turnFace(Face):
         else:
             turnFace[key] = pygame.transform.flip(Face[key], True, False)
     return turnFace
-
-
-
 
 class Player(SpriteBaseClass):
     
@@ -280,10 +289,16 @@ class Room(SpriteBaseClass):
     Exits = []
     Itemlist = pygame.sprite.Group()
     Enemies = pygame.sprite.Group()
+    Obstacles = pygame.sprite.Group()
 
     def __init__(self, PictureFilePath) -> None:
          super().__init__(PictureFilePath)
          self.generateRoom()
+
+    def draw(self, SCREEN):
+        self.Itemlist.draw(SCREEN)
+        self.Enemies.draw(SCREEN)
+        self.Obstacles.draw(SCREEN)
 
     def generateRoom(self):
         pass
@@ -346,3 +361,4 @@ class Button():
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
+
