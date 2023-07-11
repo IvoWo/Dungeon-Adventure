@@ -307,12 +307,18 @@ class Itemholder():
         self.Itemlist.remove(Item)
 
 #noch nicht ingame
-class Enemy():
+class Enemy(SpriteBaseClass):
     """A placeholder class for enemys(for now)"""
     
-    def __init__(self, Health, Speed) -> None:
+    def __init__(self, Health, Speed, image, scale, PictureFilePath) -> None:
+        super().__init__(PictureFilePath)
         self.Health = Health
         self.Movementspeed = Speed
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+
 
     def takeDamage(self, Amount):
         Health -= Amount
