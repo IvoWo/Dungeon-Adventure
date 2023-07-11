@@ -3,9 +3,10 @@ import pygame
 import math
 
 class SpriteBaseClass(pygame.sprite.Sprite):
-    def __init__(self, PictureFilePath : str):
+    def __init__(self, PictureFilePath : str, height = 16, width = 16):
         super().__init__()
         self.image = pygame.image.load(PictureFilePath).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (height, width))
         self.rect = self.image.get_rect()
 
 def turnFace(Face):
@@ -64,8 +65,8 @@ class Player(SpriteBaseClass):
     def collectItem(self):
         Item =  pygame.sprite.spritecollideany(self, self.Room.Itemlist)
         if Item:
-            self.Room.Itemlist.remove(Item)
             if not self.ActiveItemSlot:
+                self.Room.Itemlist.remove(Item)
                 self.ActiveItemSlot.add(Item)
                 
     def inspectInventory(self):
@@ -181,7 +182,7 @@ class Weapon(Item):
         super().__init__(Name, Description, pictureFilePath)
         self.Damage = Damage
         self.AttackDurationInSeconds = AttackDurationInSeconds
-        self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000
+        self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000 
         self.MillisecondsPerImage = 1000
 
     def update(self):
