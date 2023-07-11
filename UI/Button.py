@@ -24,25 +24,16 @@ class Button():
             if mouse_state and not self.prev_mouse_state:
                 self.clicked = True
 
-        #check mouseover and clicked conditions
-        #if self.rect.collidepoint(pos):
-            #if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: 
-                #self.clicked = True
-                #action = True
-
          # Check if mouse button is released
         if not mouse_state and self.prev_mouse_state:
             if self.clicked:
                 action = True
             self.clicked = False
 
-        #if pygame.mouse.get_pressed()[0] == 0:
-            #self.clicked = False
-
         #draw button on screen
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
          # Update previous mouse state
         self.prev_mouse_state = mouse_state
-        
+
         return action
