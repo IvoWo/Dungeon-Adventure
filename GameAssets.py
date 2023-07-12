@@ -3,35 +3,65 @@ import pygame
 import math
 
 class SpriteBaseClass(pygame.sprite.Sprite):
-    def __init__(self, PictureFilePath : str, Height = 16, Width = 16):
+    def __init__(self, PictureFilePath : str 
+                 ,Height = 16, Width = 16
+                 ,RightFace = {}
+                 ,FrontFace = {}
+                 ,BackFace = {}
+                 ):
         super().__init__()
         self.image = pygame.transform.scale(pygame.image.load(PictureFilePath).convert_alpha(), (Width, Height))
         self.rect = self.image.get_rect()
+        self.RightFace = self.scaleFace(self.loadFace(RightFace), Height, Width)
+        self.LeftFace = self.turnFace(self.RightFace)
+        self.FrontFace = self.scaleFace(self.loadFace(FrontFace), Height, Width)
+        self.BackFace = self.scaleFace(self.loadFace(BackFace), Height, Width)
+        self.Facing = self.FrontFace
 
-def turnFace(Face):
-    turnFace = {}
-    for key in Face:
-        if hasattr(Face[key], '__iter__'):
-            ImageList = []
-            for Image in Face[key]:
-                ImageList.append(pygame.transform.flip(Image, True, False))
-            turnFace[key] = ImageList
-        else:
-            turnFace[key] = pygame.transform.flip(Face[key], True, False)
-    return turnFace
 
-def scaleFace(Face, Height = 16, Width = 16 ):
-    turnFace = {}
-    for key in Face:
-        if hasattr(Face[key], '__iter__'):
-            ImageList = []
-            for Image in Face[key]:
-                ImageList.append(pygame.transform.scale(Image, (Width, Height)))
-            turnFace[key] = ImageList
-        else:
-            turnFace[key] = pygame.transform.scale(Face[key], (Width, Height))
-    return turnFace
+    def turnFace(self, Face):
+        turnFace = {}
+        for key in Face:
+            if hasattr(Face[key], '__iter__') and not isinstance(Face[key], str):
+                ImageList = []
+                for Image in Face[key]:
+                    ImageList.append(pygame.transform.flip(Image, True, False))
+                turnFace[key] = ImageList
+            else:
+                turnFace[key] = pygame.transform.flip(Face[key], True, False)
+        return turnFace
 
+    def scaleFace(self, Face, Height = 16, Width = 16 ):
+        turnFace = {}
+        for key in Face:
+            if hasattr(Face[key], '__iter__') and not isinstance(Face[key], str):
+                ImageList = []
+                for Image in Face[key]:
+                    ImageList.append(pygame.transform.scale(Image, (Width, Height)))
+                turnFace[key] = ImageList
+            else:
+                turnFace[key] = pygame.transform.scale(Face[key], (Width, Height))
+        return turnFace
+    
+    def loadFace(self, Face):
+        """turns a Face with Filepaths to a Face with Surfaces \n
+           checks wether its a string and then turns it to a surf """
+        turnFace = {}
+        for key in Face:
+            if hasattr(Face[key], '__iter__') and not isinstance(Face[key], str):
+                ImageList = []
+                for Image in Face[key]:
+                    if isinstance(Image, str):
+                        ImageList.append(pygame.image.load(Image).convert_alpha())
+                    else:
+                        ImageList.append(Image)
+                turnFace[key] = ImageList
+            else:
+                if isinstance(Face[key], str):
+                    turnFace[key] = pygame.image.load(Face[key]).convert_alpha()
+                else:
+                    turnFace[key] = Face[key]
+        return turnFace
 
 
 
@@ -45,29 +75,20 @@ class Player(SpriteBaseClass):
     ActiveItemSlot = pygame.sprite.Group()
     
     def __init__(self, startRoom):
-        super().__init__("pictures/IvoCD.png", 50, 50)
+        RightFace = {"Default": "pictures/SideWalk1.png", 
+                    "Walking": ["pictures/SideWalk1.png", "pictures/SideWalk2.png"] }
+        FrontFace = {"Default":"pictures/IvoCD.png", 
+                    "Walking": ["pictures/IvoCD.png"] }
+        BackFace = {"Default": "pictures/BackFace1.png", 
+                    "Walking": ["pictures/BackFace1.png"]}
+        
+        super().__init__("pictures/IvoCD.png", 50, 50, RightFace, FrontFace, BackFace)
         self.Room = startRoom
         self.WalkDurationInSeconds = 0.4
         self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
         self.MillisecondsPerImage = 1000
         self.currentImageIndex = 0
-        self.RightFace = {"Default": pygame.image.load("pictures/SideWalk1.png").convert_alpha(), 
-                    "Walking": [pygame.image.load("pictures/SideWalk1.png").convert_alpha(), pygame.image.load("pictures/SideWalk2.png").convert_alpha()] }
-        
-        self.RightFace = scaleFace(self.RightFace, 50, 50)
-        
-        self.LeftFace = turnFace(self.RightFace) 
-        
-        self.FrontFace = {"Default": pygame.image.load("pictures/IvoCD.png").convert_alpha(), 
-                    "Walking": [pygame.image.load("pictures/IvoCD.png").convert_alpha()] }
-        
-        self.FrontFace = scaleFace(self.FrontFace, 50, 50)
-        
-        self.BackFace = {"Default": pygame.image.load("pictures/BackFace1.png").convert_alpha(), 
-                    "Walking": [pygame.image.load("pictures/BackFace1.png").convert_alpha()]}
-        
-        self.BackFace = scaleFace(self.BackFace, 50, 50)
-        self.Facing = self.FrontFace
+
 
     def update(self, Screen):
         self.playerControll()
