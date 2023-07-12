@@ -3,11 +3,18 @@ import pygame
 import math
 
 class SpriteBaseClass(pygame.sprite.Sprite):
+
+    class State():
+        def __init__(self, MillisecondsPerImage = 0) -> None:
+            self.MillisecondsPerImage = MillisecondsPerImage
+            self.CurrentImageIndex = 0
+            self.AnimationStartTime = 0
+            
     def __init__(self, PictureFilePath : str 
                  ,Height = 16, Width = 16
-                 ,RightFace = {}
-                 ,FrontFace = {}
-                 ,BackFace = {}
+                 ,RightFace : dict[State , list[str]] = {}
+                 ,FrontFace : dict[State , list[str]] = {}
+                 ,BackFace : dict[State , list[str]] = {}
                  ):
         super().__init__()
         self.image = pygame.transform.scale(pygame.image.load(PictureFilePath).convert_alpha(), (Width, Height))
@@ -16,8 +23,8 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.LeftFace = self.turnFace(self.RightFace)
         self.FrontFace = self.scaleFace(self.loadFace(FrontFace), Height, Width)
         self.BackFace = self.scaleFace(self.loadFace(BackFace), Height, Width)
-        self.Facing = self.FrontFace
-
+        self.CurrentFace = self.FrontFace
+        self.CurrentState = self.State()
 
     def turnFace(self, Face):
         turnFace = {}
@@ -63,6 +70,16 @@ class SpriteBaseClass(pygame.sprite.Sprite):
                     turnFace[key] = Face[key]
         return turnFace
 
+    def animateSelf(self):
+        if self.CurrentState.AnimationStartTime == 0:
+            self.CurrentState.AnimationStartTime = pygame.time.get_ticks()
+        TimeDiff =  pygame.time.get_ticks() - self.CurrentState.AnimationStartTime
+        if TimeDiff > self.CurrentState.MillisecondsPerImage:
+            self.CurrentState.CurrentImageIndex += 1
+            self.CurrentState.AnimationStartTime = 0           
+            if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
+                self.CurrentState.CurrentImageIndex = 0
+        self.image = self.CurrentFace[self.CurrentState][self.CurrentState.CurrentImageIndex]
 
 
 class Player(SpriteBaseClass):
@@ -74,25 +91,23 @@ class Player(SpriteBaseClass):
     WalkStartTime = 0
     ActiveItemSlot = pygame.sprite.Group()
     
-    def __init__(self, startRoom):
-        RightFace = {"Default": "pictures/SideWalk1.png", 
-                    "Walking": ["pictures/SideWalk1.png", "pictures/SideWalk2.png"] }
-        FrontFace = {"Default":"pictures/IvoCD.png", 
-                    "Walking": ["pictures/IvoCD.png"] }
-        BackFace = {"Default": "pictures/BackFace1.png", 
-                    "Walking": ["pictures/BackFace1.png"]}
+    def __init__(self, currentRoom):
+        self.Default = self.State(MillisecondsPerImage= 5000)
+        self.Walking = self.State(MillisecondsPerImage= 200)
         
-        super().__init__("pictures/IvoCD.png", 50, 50, RightFace, FrontFace, BackFace)
-        self.Room = startRoom
-        self.WalkDurationInSeconds = 0.4
-        self.WalkDurationInMilliseconds = self.WalkDurationInSeconds * 1000
-        self.MillisecondsPerImage = 1000
-        self.currentImageIndex = 0
-
+        self.RightFace = {self.Default: ["pictures/SideWalk1.png"], 
+                        self.Walking: ["pictures/SideWalk1.png", "pictures/SideWalk2.png"] }
+        self.FrontFace = {self.Default:["pictures/IvoCD.png"], 
+                        self.Walking: ["pictures/IvoCD.png"] }
+        self.BackFace = {self.Default: ["pictures/BackFace1.png"], 
+                        self.Walking: ["pictures/BackFace1.png"]}
+        
+        super().__init__("pictures/IvoCD.png", 50, 50, self.RightFace, self.FrontFace, self.BackFace)
+        self.Room = currentRoom
 
     def update(self, Screen):
         self.playerControll()
-        self.animateWalk()
+        self.animateSelf()
         self.animateActiveItem(Screen)
         self.stayOnScreen()
 
@@ -124,24 +139,24 @@ class Player(SpriteBaseClass):
         self.health -= amount
     
     def playerControll(self):
-        self.IsWalking = False
+        self.CurrentState = self.Default
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             self.rect.y += -self.Movementspeed
-            self.Facing = self.BackFace
-            self.IsWalking = True
+            self.CurrentFace = self.BackFace
+            self.CurrentState = self.Walking
         if keys[pygame.K_DOWN]:
             self.rect.y += self.Movementspeed
-            self.Facing = self.FrontFace
-            self.IsWalking = True
+            self.CurrentFace = self.FrontFace
+            self.CurrentState = self.Walking
         if keys[pygame.K_LEFT]:
             self.rect.x += -self.Movementspeed
-            self.Facing = self.LeftFace
-            self.IsWalking = True
+            self.CurrentFace = self.LeftFace
+            self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.Facing = self.RightFace
-            self.IsWalking = True
+            self.CurrentFace = self.RightFace
+            self.CurrentState = self.Walking
         if keys[pygame.K_e]:
             print(self.inspectInventory())
         if keys[pygame.K_q]:
@@ -164,28 +179,6 @@ class Player(SpriteBaseClass):
         if self.rect.top < 0:
             print('Y Border Top')
             self.rect.top = 0
-
-    def switchWalkAnimationImage(self):
-        NumberOfImages = len(self.Facing["Walking"])
-        if  NumberOfImages> 1:
-            self.MillisecondsPerImage = self.WalkDurationInMilliseconds/NumberOfImages
-        TimeDiff =  pygame.time.get_ticks() -self.WalkStartTime
-        # print("msPerI:", self.MillisecondsPerImage, "TimeDiff:", TimeDiff)
-        if TimeDiff > self.MillisecondsPerImage:
-            self.currentImageIndex += 1
-            self.WalkStartTime = pygame.time.get_ticks()
-        if self.currentImageIndex > NumberOfImages-1:
-            self.currentImageIndex = 0
-        # print("current image Index:", self.currentImageIndex)
-        self.image = self.Facing["Walking"][self.currentImageIndex]
-
-    def animateWalk(self):
-        # print("Is Walking:", self.IsWalking)
-        if not self.IsWalking:
-            self.image = self.Facing["Default"]
-            self.WalkStartTime = pygame.time.get_ticks()
-        else:
-            self.switchWalkAnimationImage()
     
     def animateActiveItem(self, Screen):
         if self.ActiveItemSlot:
