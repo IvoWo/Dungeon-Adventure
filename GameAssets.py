@@ -377,7 +377,7 @@ class Enemy(SpriteBaseClass):
 
     def takeDamage(self, Amount):
         Health -= Amount
-
+    
 #Button class
 class Button():
     def __init__(self, x, y, image, scale) -> None:
@@ -387,24 +387,32 @@ class Button():
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked = False
+        self.prev_mouse_state = False
 
     def draw(self, surface):
         action = False
 
         #get mouse position
         pos = pygame.mouse.get_pos()
-    
-        #check mouseover and clicked conditions
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: 
-                self.clicked = True
-                action = True
+        mouse_state = pygame.mouse.get_pressed()[0] == 1
 
-        if pygame.mouse.get_pressed()[0] == 0:
+        # Check if mouse is over the button
+        if self.rect.collidepoint(pos):
+            # Check if mouse button is pressed down
+            if mouse_state and not self.prev_mouse_state:
+                self.clicked = True
+
+         # Check if mouse button is released
+        if not mouse_state and self.prev_mouse_state:
+            if self.clicked:
+                action = True
             self.clicked = False
 
         #draw button on screen
         surface.blit(self.image, (self.rect.x, self.rect.y))
+
+         # Update previous mouse state
+        self.prev_mouse_state = mouse_state
 
         return action
     
@@ -418,6 +426,7 @@ class gameStateManager:
         self.currentState = state
 
 class Gamestate_start:
+
     def __init__(self, screen, gameStateManager):
         self.screen = screen
         self.gameStateManager = gameStateManager
@@ -433,11 +442,17 @@ class Gamestate_start:
 
     def run(self):
         self.screen.blit(self.image, (0,0))
+
+        if(not pygame.mixer.music.get_busy()):
+            pygame.mixer.music.load('Sounds/Main_Menu_Sound.wav')
+            pygame.mixer.music.play(-1)
+
         if self.quit_button.draw(self.screen):
             pygame.quit()
             sys.exit()
             
         if self.start_button.draw(self.screen):
+            pygame.mixer.music.stop()
             self.gameStateManager.set_state('run')
 
         if self.options_button.draw(self.screen):
@@ -457,18 +472,57 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+    
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        # Handle Escape key press
+                        if self.gameStateManager.get_state() == 'run':
+                            self.states['run'].PauseGame =True
 
             self.states[self.gameStateManager.get_state()].run()
             pygame.display.update()
             self.clock.tick(self.FPS)
 
 class Gamestate_run:
-    def __init__(self, display, gameStateManager): 
-        self.display = display
+    def __init__(self, screen, gameStateManager): 
+        self.screen = screen
         self.gameStateManager = gameStateManager
+        self.PauseGame = False
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
+        self.Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
+        self.Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
+        self.Main_img = pygame.image.load('pictures/Main_Button.png').convert_alpha()
+
+        self.continue_button = Button(250, 145, self.Continue_img, 1.5)
+        self.options_button = Button(254, 190, self.Options_img, 1.5)
+        self.main_button = Button(278, 240, self.Main_img, 1.5)
 
     def run(self):
-        self.display.fill('blue')
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_e]:
-            self.gameStateManager.set_state('start')
+        self.screen.blit(self.image, (0,0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.PauseGame = not self.PauseGame
+
+        if(self.PauseGame == False):
+
+            pygame.mixer.music.unpause()
+
+            if(not pygame.mixer.music.get_busy()):
+                pygame.mixer.music.load('Sounds/Running_Sound.wav')
+                pygame.mixer.music.play(-1)
+        else:
+            pygame.mixer.music.pause()
+
+            if self.continue_button.draw(self.screen):
+                self.PauseGame = not self.PauseGame
+
+            if self.options_button.draw(self.screen):
+                print('not yet implemented')
+
+            if self.main_button.draw(self.screen):
+                pygame.mixer.music.stop()
+                self.PauseGame = False
+                self.gameStateManager.set_state('start')
