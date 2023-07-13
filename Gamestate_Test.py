@@ -1,5 +1,4 @@
 import pygame
-import sys
 
 SCREENWIDTH, SCREENHIGHT = 960,620
 FPS = 60
