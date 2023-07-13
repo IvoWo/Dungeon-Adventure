@@ -170,8 +170,8 @@ class Player(SpriteBaseClass):
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.Facing = self.RightFace
-            self.IsWalking = True
+            self.CurrentFace = self.RightFace
+            self.CurrentState = self.Walking
         if keys[pygame.K_e]:
             print(self.inspectInventory())
         if keys[pygame.K_q]:
