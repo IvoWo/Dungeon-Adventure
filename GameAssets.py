@@ -77,8 +77,8 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         if TimeDiff > self.CurrentState.MillisecondsPerImage:
             self.CurrentState.CurrentImageIndex += 1
             self.CurrentState.AnimationStartTime = 0           
-            if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
-                self.CurrentState.CurrentImageIndex = 0
+        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
+            self.CurrentState.CurrentImageIndex = 0
         self.image = self.CurrentFace[self.CurrentState][self.CurrentState.CurrentImageIndex]
 
 
