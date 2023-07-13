@@ -3,6 +3,7 @@ import random
 import pygame
 import math
 from random import randrange
+import sys
 
 
 
@@ -441,6 +442,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    sys.exit
 
             self.states[self.gameStateManager.get_state()].run()
             pygame.display.update()
