@@ -4,6 +4,8 @@ import pygame
 import math
 from random import randrange
 
+
+
 class SpriteBaseClass(pygame.sprite.Sprite):
 
     class State():
@@ -28,30 +30,6 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.CurrentFace = self.FrontFace
         self.CurrentState = self.State()
 
-<<<<<<< HEAD
-
-class Obstacle(SpriteBaseClass):
-    def __init__(self, image, x, y) -> None:
-        super().__init__(image)
-        self.rect.center = (x,y)
-        
-class Rock(Obstacle):
-    def __init__(self, x, y):
-        super().__init__("pictures/rock.png", x, y)
-
-def turnFace(Face):
-    turnFace = {}
-    for key in Face:
-        if hasattr(Face[key], '__iter__'):
-            ImageList = []
-            for Image in Face[key]:
-                ImageList.append(pygame.transform.flip(Image, True, False))
-            turnFace[key] = ImageList
-        else:
-            turnFace[key] = pygame.transform.flip(Face[key], True, False)
-    return turnFace
-
-=======
     def turnFace(self, Face):
         turnFace = {}
         for key in Face:
@@ -108,7 +86,16 @@ def turnFace(Face):
         self.image = self.CurrentFace[self.CurrentState][self.CurrentState.CurrentImageIndex]
 
 
->>>>>>> d1275c307db0bd23464e56535256e6c181262448
+
+class Obstacle(SpriteBaseClass):
+    def __init__(self, image, x, y) -> None:
+        super().__init__(image)
+        self.rect.center = (x,y)
+        
+class Rock(Obstacle):
+    def __init__(self, x, y):
+        super().__init__("pictures/rock.png", x, y)
+
 class Player(SpriteBaseClass):
     
     Inventory = []
