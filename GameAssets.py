@@ -430,7 +430,6 @@ class Gamestate_start:
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
-        pygame.display.set_caption('Dungeon-Adventure')
         self.clock = pygame.time.Clock()
         self.gameStateManager = gameStateManager
         self.FPS = FPS

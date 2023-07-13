@@ -1,9 +1,8 @@
 from sys import exit
 from GameAssets import *
 from UI import *
-from pygame import mixer
+from pygame import mixer_music
 
-pygame.init()
 SCREENWIDTH, SCREENHIGHT = 600,600
 screen = pygame.display.set_mode((SCREENWIDTH,SCREENHIGHT))
 FPS = 60
