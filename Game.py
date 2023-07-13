@@ -2,7 +2,6 @@ from sys import exit
 from GameAssets import *
 from UI import *
 from pygame import mixer
-import Gamestate_Test
 
 pygame.init()
 ScreenSize = (600, 600 )

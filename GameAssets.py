@@ -169,8 +169,8 @@ class Player(SpriteBaseClass):
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.CurrentFace = self.RightFace
-            self.CurrentState = self.Walking
+            self.Facing = self.RightFace
+            self.IsWalking = True
         if keys[pygame.K_e]:
             print(self.inspectInventory())
         if keys[pygame.K_q]:
@@ -416,23 +416,28 @@ class gameStateManager:
     def set_state(self, state):
         self.currentState = state
 
+class Gamestate_start:
+    def __init__(self, display, gameStateManager):
+        self.display = display
+
+        self.gameStateManager = gameStateManager
+    def run(self):
+        self.display.fill('red')
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_e]:
+            self.gameStateManager.set_state('level')
+
 class Game:  
-    def __init__(self,SCREENWIDTH,SCREENHIGHT,FPS):
-        self.screen = pygame.display.set_mode((SCREENWIDTH,SCREENHIGHT))
+    def __init__(self, gameStateManager, states, FPS):
         self.clock = pygame.time.Clock()
+        self.gameStateManager = gameStateManager
         self.FPS = FPS
 
-        self.gameStateManager = gameStateManager('start')
-        self.start = Start(self.screen, self.gameStateManager, 'Main_Menu.png')
-        #self.level = Level(self.screen, self.gameStateManager)
-
-        self.states = {'start', self.start}
-    
-    def State_Add(self, name, type):
-        self.states[name] = type
+        self.states = states
 
     def run(self):
-        while True:
+        run = True
+        while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -441,19 +446,13 @@ class Game:
             pygame.display.update()
             self.clock.tick(self.FPS)
 
-class Start:
-    def __init__(self, display, gameStateManager,PictureFilePath):
+class Gamestate_run:
+    def __init__(self, display, gameStateManager): 
         self.display = display
         self.gameStateManager = gameStateManager
-        self.PictureFilePath = PictureFilePath
 
     def run(self):
-        self.display.blit(pygame.transform.rotozoom(pygame.image.load(self.PictureFilePath).convert_alpha(), 0, 6), (0,0))
-        #keys = pygame.key.get_pressed()
-        #if keys[pygame.K_e]:
-            #self.gameStateManager.set_state('level')
-
-if __name__ == '__main__':
-    game = Game(600,600,60)
-    game.run
-
+        self.display.fill('blue')
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_e]:
+            self.gameStateManager.set_state('start')

@@ -1,10 +1,11 @@
 import pygame
+import sys
 
 SCREENWIDTH, SCREENHIGHT = 960,620
 FPS = 60
 
 class Game:  
-    def __init__(self,SCREENWIDTH,SCREENHIGHT):
+    def __init__(self):
         self.screen = pygame.display.set_mode((SCREENWIDTH,SCREENHIGHT))
         self.clock = pygame.time.Clock()
 
