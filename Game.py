@@ -53,8 +53,15 @@ player1 = Player(Room1)
 player.add(player1)
 
 
-Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
-Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
+Sword = Weapon("pictures/Sword1.png",
+                "Sword", "Dangery",
+                1, 1000, 16, 16,
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"])
 Room1.Itemlist.add(Sword)
 
 rock1 = Rock(450, 450)
