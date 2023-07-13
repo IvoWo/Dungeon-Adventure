@@ -28,7 +28,7 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.CurrentFace = self.FrontFace
         self.CurrentState = self.State()
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 
 class Obstacle(SpriteBaseClass):
     def __init__(self, image, x, y) -> None:
@@ -51,7 +51,6 @@ def turnFace(Face):
             turnFace[key] = pygame.transform.flip(Face[key], True, False)
     return turnFace
 
-=======
     def turnFace(self, Face):
         turnFace = {}
         for key in Face:
@@ -108,7 +107,7 @@ def turnFace(Face):
         self.image = self.CurrentFace[self.CurrentState][self.CurrentState.CurrentImageIndex]
 
 
->>>>>>> d1275c307db0bd23464e56535256e6c181262448
+#>>>>>>> d1275c307db0bd23464e56535256e6c181262448
 class Player(SpriteBaseClass):
     
     Inventory = []
