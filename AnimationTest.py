@@ -19,14 +19,16 @@ playerGroup = pygame.sprite.GroupSingle()
 player1 = Player(Room1)
 playerGroup.add(player1)
 
-Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
-Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
-
-Potion = Weapon("Potion", "consumable","pictures/potion1.png", 1 )
-Potion.addAnimationImages("pictures/potion1.png", "pictures/potion2.png", "pictures/potion3.png")
-Potion.rect.center = (200, 200)
-Room1.Itemlist.add(Sword, Potion)
-
+Sword = Weapon("pictures/Sword1.png",
+                "Sword", "Dangery",
+                1, 1000, 16, 16,
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"])
+Room1.Itemlist.add(Sword)
 
 
 # game loop

@@ -170,8 +170,8 @@ class Player(SpriteBaseClass):
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.Facing = self.RightFace
-            self.IsWalking = True
+            self.CurrentFace = self.RightFace
+            self.CurrentState = self.Walking
         if keys[pygame.K_e]:
             print(self.inspectInventory())
         if keys[pygame.K_q]:
@@ -203,10 +203,17 @@ class Player(SpriteBaseClass):
             self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
-    def __init__(self, Name, Description, PictureFilePath) -> None:
-        super().__init__(PictureFilePath)
-        self.Description = Description
+    def __init__(self, 
+                 PictureFilePath: str, 
+                 Name : str = "",
+                 Description: str = "",
+                 Height=16, Width=16, 
+                 RightFace: dict[SpriteBaseClass.State, list[str]] = {}, 
+                 FrontFace: dict[SpriteBaseClass.State, list[str]] = {}, 
+                 BackFace: dict[SpriteBaseClass.State, list[str]] = {}):
         self.Name = Name
+        self.Description = Description
+        super().__init__(PictureFilePath, Height, Width, RightFace, FrontFace, BackFace)
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
@@ -219,65 +226,48 @@ class Weapon(Item):
     # the hurtBoxGroup contains the sprites of the attack animation
     # for example bullest, checking bullet collision can then be done be checking againt the whole group
     HurtboxGroup = pygame.sprite.Group()
-    # the attack Animation contains several Images in a List, that are played in a loop when attacking
-    AttackAnimationImages = []
-    IsAttacking = False
-    AttackStartTime = 0
+    AttackStarttime = 0
+    Default = SpriteBaseClass.State()
+    Attacking = SpriteBaseClass.State(200)
 
-    def __init__(self, Name, Description, pictureFilePath, Damage: int, AttackDurationInSeconds = 0.5) -> None:
-        super().__init__(Name, Description, pictureFilePath)
+    def __init__(self, 
+                 PictureFilePath: str, 
+                 Name: str = "", 
+                 Description: str = "", 
+                 Damage: int = 1,
+                 AttackDurationInMilliseconds = 500, 
+                 Height=16, Width=16, 
+                 RightFaceDefaultImages: list[str] = [],
+                 RightFaceAttackingImages: list[str] = [], 
+                 FrontFaceDefaultImages: list[str] = [],
+                 FrontFaceAttackingImages: list[str] = [], 
+                 BackFaceDefaultImages: list[str] = [],
+                 BackFaceAttackingImages: list[str] = []):
         self.Damage = Damage
-        self.AttackDurationInSeconds = AttackDurationInSeconds
-        self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000 
-        self.MillisecondsPerImage = 1000
+        self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
+        self.Default = self.State()
+        self.Attacking = self.State(200)
+        RightFace = {self.Default: RightFaceDefaultImages,
+                     self.Attacking: RightFaceAttackingImages}
+        FrontFace = {self.Default: FrontFaceDefaultImages,
+                     self.Attacking: FrontFaceAttackingImages}
+        BackFace = {self.Default: BackFaceDefaultImages,
+                     self.Attacking: BackFaceAttackingImages}
+
+        super().__init__(PictureFilePath, Name, Description, Height, Width, RightFace, FrontFace, BackFace)
+        # it is extremly Important to set the state the a know State before self.animate is called
+        self.CurrentState = self.Default
 
     def update(self):
-        self.animateWeapon()
-
-    def addAnimationImages(self, *Images):
-        """pass in any amount of file location strings, seperate by comma \n
-           Example: addImages("pictures/pic1.png", "pictures/pic2.png", ...) """
-        for Image in Images:
-            self.AttackAnimationImages.append(pygame.image.load(Image).convert_alpha())
-    
-    # # TO-DO: use MousePos to get the direction of the attack
-    # def startAttack(self):
-    #     keys = pygame.key.get_pressed()
-    #     if keys[pygame.K_a] and not self.IsAttacking:
-    #         # MousePos = pygame.mouse.get_pos()
-    #         # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
-    #         # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
-    #         # # normalising the vector
-    #         # AttackDirection[0] = AttackDirection[0]/LenVector
-    #         # AttackDirection[1] = AttackDirection[1]/LenVector
-    #         self.IsAttacking = True
+        self.animateSelf()
+        TimeDiff = pygame.time.get_ticks() - self.AttackStarttime
+        if TimeDiff > self.AttackDurationInMilliseconds:
+            self.CurrentState = self.Default
 
     def useItem(self):
-        super().useItem()
-        if not self.IsAttacking:
-            self.IsAttacking = True
-
-
-    def createHurtbox(self):
-        pass
-
-    def switchAnimationImage(self):
-        if len(self.AttackAnimationImages) > 0:
-            self.MillisecondsPerImage = self.AttackDurationInMilliseconds/len(self.AttackAnimationImages)
-        TimeDiff = pygame.time.get_ticks() - self.AttackStartTime
-        if TimeDiff < self.AttackDurationInMilliseconds:
-            CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
-            self.image = self.AttackAnimationImages[CurrentImageNum]
-        else:
-            self.IsAttacking = False
-            self.AttackStartTime = 0
-            self.image = self.AttackAnimationImages[0]
-
-    def animateWeapon(self):
-        if not self.IsAttacking:
-            self.AttackStartTime = pygame.time.get_ticks()
-        else:
-            self.switchAnimationImage()
+        if not self.CurrentState == self.Attacking: 
+            self.AttackStarttime = pygame.time.get_ticks()
+            self.CurrentState = self.Attacking
 
 class Map():
     #Map ist für die allgemeine Map - Verbindung der Räume
