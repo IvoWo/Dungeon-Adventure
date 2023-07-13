@@ -57,6 +57,8 @@ Sword = Weapon("Sword", "Dangery", "pictures/Sword1.png", 10, 0.3)
 Sword.addAnimationImages("pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png")
 Room1.Itemlist.add(Sword)
 
+rock1 = Rock(450, 450)
+Room1.Obstacles.add(rock1)
 
 # game loop
 run = True
@@ -108,9 +110,10 @@ while run:
                 Music_Playing = 'r'
             screen.blit(background_surf, (0,0))
             # animate groups
+            Room1.draw(screen)
             player.draw(screen)
             player.update(screen)
-            Room1.Itemlist.draw(screen)
+            #Room1.Itemlist.draw(screen)
             Room1.Itemlist.update()
 
     pygame.display.update()
