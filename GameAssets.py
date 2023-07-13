@@ -352,3 +352,53 @@ class Button():
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
+    
+class gameStateManager:
+    def __init__(self, currentState):
+        self.currentState = currentState
+
+    def get_state(self):
+        return self.currentState
+    def set_state(self, state):
+        self.currentState = state
+
+class Game:  
+    def __init__(self,SCREENWIDTH,SCREENHIGHT,FPS):
+        self.screen = pygame.display.set_mode((SCREENWIDTH,SCREENHIGHT))
+        self.clock = pygame.time.Clock()
+        self.FPS = FPS
+
+        self.gameStateManager = gameStateManager('start')
+        self.start = Start(self.screen, self.gameStateManager, 'Main_Menu.png')
+        #self.level = Level(self.screen, self.gameStateManager)
+
+        self.states = {'start', self.start}
+    
+    def State_Add(self, name, type):
+        self.states[name] = type
+
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+
+            self.states[self.gameStateManager.get_state()].run()
+            pygame.display.update()
+            self.clock.tick(self.FPS)
+
+class Start:
+    def __init__(self, display, gameStateManager,PictureFilePath):
+        self.display = display
+        self.gameStateManager = gameStateManager
+        self.PictureFilePath = PictureFilePath
+
+    def run(self):
+        self.display.blit(pygame.transform.rotozoom(pygame.image.load(self.PictureFilePath).convert_alpha(), 0, 6), (0,0))
+        #keys = pygame.key.get_pressed()
+        #if keys[pygame.K_e]:
+            #self.gameStateManager.set_state('level')
+
+if __name__ == '__main__':
+    game = Game(600,600,60)
+    game.run

@@ -1,11 +1,13 @@
-import pygame
-import sys
+from sys import exit
+from GameAssets import *
+from UI import *
+from pygame import mixer
 
-SCREENWIDTH, SCREENHIGHT = 960,620
+SCREENWIDTH, SCREENHIGHT = 600,600
 FPS = 60
 
 class Game:  
-    def __init__(self,SCREENWIDTH,SCREENHIGHT):
+    def __init__(self):
         self.screen = pygame.display.set_mode((SCREENWIDTH,SCREENHIGHT))
         self.clock = pygame.time.Clock()
 
@@ -20,7 +22,6 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    sys.exit()
 
             self.states[self.gameStateManager.get_state()].run()
             pygame.display.update()
