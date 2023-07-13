@@ -24,7 +24,6 @@ Music_Playing = 'M'
 Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
 Quit_img = pygame.image.load('pictures/Quit_Button.png').convert_alpha()
 Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
-
 Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
 Main_img = pygame.image.load('pictures/Main_Button.png').convert_alpha()
 

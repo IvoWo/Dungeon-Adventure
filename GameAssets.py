@@ -418,31 +418,45 @@ class gameStateManager:
         self.currentState = state
 
 class Gamestate_start:
-    def __init__(self, display, gameStateManager):
-        self.display = display
-
+    def __init__(self, screen, gameStateManager):
+        self.screen = screen
         self.gameStateManager = gameStateManager
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+        self.Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
+        self.Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
+        self.Quit_img = pygame.image.load('pictures/Quit_Button.png').convert_alpha()
+
+        self.quit_button = Button(278, 240, self.Quit_img, 1.5)
+        self.options_button = Button(254, 190, self.Options_img, 1.5)
+        self.start_button = Button(268, 145, self.Start_img, 1.5)
+
     def run(self):
-        self.display.fill('red')
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_e]:
-            self.gameStateManager.set_state('level')
+        self.screen.blit(self.image, (0,0))
+        if self.quit_button.draw(self.screen):
+            pygame.quit()
+            sys.exit()
+            
+        if self.start_button.draw(self.screen):
+            self.gameStateManager.set_state('run')
+
+        if self.options_button.draw(self.screen):
+            print('not yet implemented')
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
         self.clock = pygame.time.Clock()
+
         self.gameStateManager = gameStateManager
         self.FPS = FPS
-
         self.states = states
 
     def run(self):
-        run = True
-        while run:
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    sys.exit
+                    sys.exit()
 
             self.states[self.gameStateManager.get_state()].run()
             pygame.display.update()
