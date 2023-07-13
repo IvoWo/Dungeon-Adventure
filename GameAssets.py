@@ -3,6 +3,7 @@ import random
 import pygame
 import math
 from random import randrange
+import sys
 
 
 
@@ -169,8 +170,8 @@ class Player(SpriteBaseClass):
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.CurrentFace = self.RightFace
-            self.CurrentState = self.Walking
+            self.Facing = self.RightFace
+            self.IsWalking = True
         if keys[pygame.K_e]:
             print(self.inspectInventory())
         if keys[pygame.K_q]:
@@ -351,12 +352,18 @@ class Itemholder():
         self.Itemlist.remove(Item)
 
 #noch nicht ingame
-class Enemy():
+class Enemy(SpriteBaseClass):
     """A placeholder class for enemys(for now)"""
     
-    def __init__(self, Health, Speed) -> None:
+    def __init__(self, Health, Speed, image, scale, PictureFilePath) -> None:
+        super().__init__(PictureFilePath)
         self.Health = Health
         self.Movementspeed = Speed
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+
 
     def takeDamage(self, Amount):
         Health -= Amount
@@ -390,4 +397,68 @@ class Button():
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
         return action
+    
+class gameStateManager:
+    def __init__(self, currentState):
+        self.currentState = currentState
 
+    def get_state(self):
+        return self.currentState
+    def set_state(self, state):
+        self.currentState = state
+
+class Gamestate_start:
+    def __init__(self, screen, gameStateManager):
+        self.screen = screen
+        self.gameStateManager = gameStateManager
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+        self.Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
+        self.Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
+        self.Quit_img = pygame.image.load('pictures/Quit_Button.png').convert_alpha()
+
+        self.quit_button = Button(278, 240, self.Quit_img, 1.5)
+        self.options_button = Button(254, 190, self.Options_img, 1.5)
+        self.start_button = Button(268, 145, self.Start_img, 1.5)
+
+    def run(self):
+        self.screen.blit(self.image, (0,0))
+        if self.quit_button.draw(self.screen):
+            pygame.quit()
+            sys.exit()
+            
+        if self.start_button.draw(self.screen):
+            self.gameStateManager.set_state('run')
+
+        if self.options_button.draw(self.screen):
+            print('not yet implemented')
+
+class Game:  
+    def __init__(self, gameStateManager, states, FPS):
+        self.clock = pygame.time.Clock()
+
+        self.gameStateManager = gameStateManager
+        self.FPS = FPS
+        self.states = states
+
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            self.states[self.gameStateManager.get_state()].run()
+            pygame.display.update()
+            self.clock.tick(self.FPS)
+
+class Gamestate_run:
+    def __init__(self, display, gameStateManager): 
+        self.display = display
+        self.gameStateManager = gameStateManager
+
+    def run(self):
+        self.display.fill('blue')
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_e]:
+            self.gameStateManager.set_state('start')
