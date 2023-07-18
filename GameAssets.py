@@ -3,6 +3,9 @@ import random
 import pygame
 import math
 from random import randrange
+import sys
+
+
 
 class SpriteBaseClass(pygame.sprite.Sprite):
 
@@ -27,34 +30,11 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.BackFace = self.scaleFace(self.loadFace(BackFace), Height, Width)
         self.CurrentFace = self.FrontFace
         self.CurrentState = self.State()
-
-#<<<<<<< HEAD
-
-class Obstacle(SpriteBaseClass):
-    def __init__(self, image, x, y) -> None:
-        super().__init__(image)
-        self.rect.center = (x,y)
-        
-class Rock(Obstacle):
-    def __init__(self, x, y):
-        super().__init__("pictures/rock.png", x, y)
-
-def turnFace(Face):
-    turnFace = {}
-    for key in Face:
-        if hasattr(Face[key], '__iter__'):
-            ImageList = []
-            for Image in Face[key]:
-                ImageList.append(pygame.transform.flip(Image, True, False))
-            turnFace[key] = ImageList
-        else:
-            turnFace[key] = pygame.transform.flip(Face[key], True, False)
-    return turnFace
-
-    def turnFace(self, Face):
+    
+    def turnFace(Face):
         turnFace = {}
         for key in Face:
-            if hasattr(Face[key], '__iter__') and not isinstance(Face[key], str):
+            if hasattr(Face[key], '__iter__'):
                 ImageList = []
                 for Image in Face[key]:
                     ImageList.append(pygame.transform.flip(Image, True, False))
@@ -102,12 +82,19 @@ def turnFace(Face):
         if TimeDiff > self.CurrentState.MillisecondsPerImage:
             self.CurrentState.CurrentImageIndex += 1
             self.CurrentState.AnimationStartTime = 0           
-            if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
-                self.CurrentState.CurrentImageIndex = 0
+        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
+            self.CurrentState.CurrentImageIndex = 0
         self.image = self.CurrentFace[self.CurrentState][self.CurrentState.CurrentImageIndex]
 
+class Obstacle(SpriteBaseClass):
+    def __init__(self, image, x, y) -> None:
+        super().__init__(image)
+        self.rect.center = (x,y)
+        
+class Rock(Obstacle):
+    def __init__(self, x, y):
+        super().__init__("pictures/rock.png", x, y)
 
-#>>>>>>> d1275c307db0bd23464e56535256e6c181262448
 class Player(SpriteBaseClass):
     
     Inventory = []
@@ -214,10 +201,17 @@ class Player(SpriteBaseClass):
             self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
-    def __init__(self, Name, Description, PictureFilePath) -> None:
-        super().__init__(PictureFilePath)
-        self.Description = Description
+    def __init__(self, 
+                 PictureFilePath: str, 
+                 Name : str = "",
+                 Description: str = "",
+                 Height=16, Width=16, 
+                 RightFace: dict[SpriteBaseClass.State, list[str]] = {}, 
+                 FrontFace: dict[SpriteBaseClass.State, list[str]] = {}, 
+                 BackFace: dict[SpriteBaseClass.State, list[str]] = {}):
         self.Name = Name
+        self.Description = Description
+        super().__init__(PictureFilePath, Height, Width, RightFace, FrontFace, BackFace)
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
@@ -230,65 +224,48 @@ class Weapon(Item):
     # the hurtBoxGroup contains the sprites of the attack animation
     # for example bullest, checking bullet collision can then be done be checking againt the whole group
     HurtboxGroup = pygame.sprite.Group()
-    # the attack Animation contains several Images in a List, that are played in a loop when attacking
-    AttackAnimationImages = []
-    IsAttacking = False
-    AttackStartTime = 0
+    AttackStarttime = 0
+    Default = SpriteBaseClass.State()
+    Attacking = SpriteBaseClass.State(200)
 
-    def __init__(self, Name, Description, pictureFilePath, Damage: int, AttackDurationInSeconds = 0.5) -> None:
-        super().__init__(Name, Description, pictureFilePath)
+    def __init__(self, 
+                 PictureFilePath: str, 
+                 Name: str = "", 
+                 Description: str = "", 
+                 Damage: int = 1,
+                 AttackDurationInMilliseconds = 500, 
+                 Height=16, Width=16, 
+                 RightFaceDefaultImages: list[str] = [],
+                 RightFaceAttackingImages: list[str] = [], 
+                 FrontFaceDefaultImages: list[str] = [],
+                 FrontFaceAttackingImages: list[str] = [], 
+                 BackFaceDefaultImages: list[str] = [],
+                 BackFaceAttackingImages: list[str] = []):
         self.Damage = Damage
-        self.AttackDurationInSeconds = AttackDurationInSeconds
-        self.AttackDurationInMilliseconds = self.AttackDurationInSeconds * 1000 
-        self.MillisecondsPerImage = 1000
+        self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
+        self.Default = self.State()
+        self.Attacking = self.State(200)
+        RightFace = {self.Default: RightFaceDefaultImages,
+                     self.Attacking: RightFaceAttackingImages}
+        FrontFace = {self.Default: FrontFaceDefaultImages,
+                     self.Attacking: FrontFaceAttackingImages}
+        BackFace = {self.Default: BackFaceDefaultImages,
+                     self.Attacking: BackFaceAttackingImages}
+
+        super().__init__(PictureFilePath, Name, Description, Height, Width, RightFace, FrontFace, BackFace)
+        # it is extremly Important to set the state the a know State before self.animate is called
+        self.CurrentState = self.Default
 
     def update(self):
-        self.animateWeapon()
-
-    def addAnimationImages(self, *Images):
-        """pass in any amount of file location strings, seperate by comma \n
-           Example: addImages("pictures/pic1.png", "pictures/pic2.png", ...) """
-        for Image in Images:
-            self.AttackAnimationImages.append(pygame.image.load(Image).convert_alpha())
-    
-    # # TO-DO: use MousePos to get the direction of the attack
-    # def startAttack(self):
-    #     keys = pygame.key.get_pressed()
-    #     if keys[pygame.K_a] and not self.IsAttacking:
-    #         # MousePos = pygame.mouse.get_pos()
-    #         # AttackDirection = (MousePos[0] -self.rect.centerx, MousePos[1] - self.rect.centery)
-    #         # LenVector = math.sqrt(math.pow(AttackDirection[0],2) + math.pow(AttackDirection[1],2))
-    #         # # normalising the vector
-    #         # AttackDirection[0] = AttackDirection[0]/LenVector
-    #         # AttackDirection[1] = AttackDirection[1]/LenVector
-    #         self.IsAttacking = True
+        self.animateSelf()
+        TimeDiff = pygame.time.get_ticks() - self.AttackStarttime
+        if TimeDiff > self.AttackDurationInMilliseconds:
+            self.CurrentState = self.Default
 
     def useItem(self):
-        super().useItem()
-        if not self.IsAttacking:
-            self.IsAttacking = True
-
-
-    def createHurtbox(self):
-        pass
-
-    def switchAnimationImage(self):
-        if len(self.AttackAnimationImages) > 0:
-            self.MillisecondsPerImage = self.AttackDurationInMilliseconds/len(self.AttackAnimationImages)
-        TimeDiff = pygame.time.get_ticks() - self.AttackStartTime
-        if TimeDiff < self.AttackDurationInMilliseconds:
-            CurrentImageNum = math.floor(TimeDiff/self.MillisecondsPerImage)
-            self.image = self.AttackAnimationImages[CurrentImageNum]
-        else:
-            self.IsAttacking = False
-            self.AttackStartTime = 0
-            self.image = self.AttackAnimationImages[0]
-
-    def animateWeapon(self):
-        if not self.IsAttacking:
-            self.AttackStartTime = pygame.time.get_ticks()
-        else:
-            self.switchAnimationImage()
+        if not self.CurrentState == self.Attacking: 
+            self.AttackStarttime = pygame.time.get_ticks()
+            self.CurrentState = self.Attacking
 
 class Map():
     #Map ist für die allgemeine Map - Verbindung der Räume
@@ -373,16 +350,22 @@ class Itemholder():
         self.Itemlist.remove(Item)
 
 #noch nicht ingame
-class Enemy():
+class Enemy(SpriteBaseClass):
     """A placeholder class for enemys(for now)"""
     
-    def __init__(self, Health, Speed) -> None:
+    def __init__(self, Health, Speed, image, scale, PictureFilePath) -> None:
+        super().__init__(PictureFilePath)
         self.Health = Health
         self.Movementspeed = Speed
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+
 
     def takeDamage(self, Amount):
         Health -= Amount
-
+    
 #Button class
 class Button():
     def __init__(self, x, y, image, scale) -> None:
@@ -392,24 +375,142 @@ class Button():
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked = False
+        self.prev_mouse_state = False
 
     def draw(self, surface):
         action = False
 
         #get mouse position
         pos = pygame.mouse.get_pos()
-    
-        #check mouseover and clicked conditions
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False: 
-                self.clicked = True
-                action = True
+        mouse_state = pygame.mouse.get_pressed()[0] == 1
 
-        if pygame.mouse.get_pressed()[0] == 0:
+        # Check if mouse is over the button
+        if self.rect.collidepoint(pos):
+            # Check if mouse button is pressed down
+            if mouse_state and not self.prev_mouse_state:
+                self.clicked = True
+
+         # Check if mouse button is released
+        if not mouse_state and self.prev_mouse_state:
+            if self.clicked:
+                action = True
             self.clicked = False
 
         #draw button on screen
         surface.blit(self.image, (self.rect.x, self.rect.y))
 
-        return action
+         # Update previous mouse state
+        self.prev_mouse_state = mouse_state
 
+        return action
+    
+class gameStateManager:
+    def __init__(self, currentState):
+        self.currentState = currentState
+
+    def get_state(self):
+        return self.currentState
+    def set_state(self, state):
+        self.currentState = state
+
+class Gamestate_start:
+
+    def __init__(self, screen, gameStateManager):
+        self.screen = screen
+        self.gameStateManager = gameStateManager
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+        self.Start_img = pygame.image.load('pictures/Start_Button.png').convert_alpha()
+        self.Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
+        self.Quit_img = pygame.image.load('pictures/Quit_Button.png').convert_alpha()
+
+        self.quit_button = Button(278, 240, self.Quit_img, 1.5)
+        self.options_button = Button(254, 190, self.Options_img, 1.5)
+        self.start_button = Button(268, 145, self.Start_img, 1.5)
+
+    def run(self):
+        self.screen.blit(self.image, (0,0))
+
+        if(not pygame.mixer.music.get_busy()):
+            pygame.mixer.music.load('Sounds/Main_Menu_Sound.wav')
+            pygame.mixer.music.play(-1)
+
+        if self.quit_button.draw(self.screen):
+            pygame.quit()
+            sys.exit()
+            
+        if self.start_button.draw(self.screen):
+            pygame.mixer.music.stop()
+            self.gameStateManager.set_state('run')
+
+        if self.options_button.draw(self.screen):
+            print('not yet implemented')
+
+class Game:  
+    def __init__(self, gameStateManager, states, FPS):
+        self.clock = pygame.time.Clock()
+
+        self.gameStateManager = gameStateManager
+        self.FPS = FPS
+        self.states = states
+
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+    
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        # Handle Escape key press
+                        if self.gameStateManager.get_state() == 'run':
+                            self.states['run'].PauseGame =True
+
+            self.states[self.gameStateManager.get_state()].run()
+            pygame.display.update()
+            self.clock.tick(self.FPS)
+
+class Gamestate_run:
+    def __init__(self, screen, gameStateManager): 
+        self.screen = screen
+        self.gameStateManager = gameStateManager
+        self.PauseGame = False
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
+        self.Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
+        self.Options_img = pygame.image.load('pictures/Options_Button.png').convert_alpha()
+        self.Main_img = pygame.image.load('pictures/Main_Button.png').convert_alpha()
+
+        self.continue_button = Button(250, 145, self.Continue_img, 1.5)
+        self.options_button = Button(254, 190, self.Options_img, 1.5)
+        self.main_button = Button(278, 240, self.Main_img, 1.5)
+
+    def run(self):
+        self.screen.blit(self.image, (0,0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.PauseGame = not self.PauseGame
+
+        if(self.PauseGame == False):
+
+            pygame.mixer.music.unpause()
+
+            if(not pygame.mixer.music.get_busy()):
+                pygame.mixer.music.load('Sounds/Running_Sound.wav')
+                pygame.mixer.music.play(-1)
+        else:
+            pygame.mixer.music.pause()
+
+            if self.continue_button.draw(self.screen):
+                self.PauseGame = not self.PauseGame
+
+            if self.options_button.draw(self.screen):
+                print('not yet implemented')
+
+            if self.main_button.draw(self.screen):
+                pygame.mixer.music.stop()
+                self.PauseGame = False
+                self.gameStateManager.set_state('start')
