@@ -7,8 +7,8 @@ GRAY = (200, 200, 200)
 BLUE = (0, 0, 255)
 
 # Screen dimensions
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 200
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 600
 
 # Slider dimensions
 SLIDER_WIDTH = 200
