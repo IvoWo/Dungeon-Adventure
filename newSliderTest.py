@@ -48,14 +48,17 @@ class Slider:
         pygame.draw.rect(screen, ("Grey"), self.rect)
         pygame.draw.circle(screen, "Blue", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
 
-        pygame.display.flip()
+        if action:
+            pygame.display.flip()
 
         self.prev_mouse_state = mouse_state
 
         return action
 
+    def value(self):
 
-
+        value = (self.slider_pos - self.rect.topleft[0]) / (self.rect.topright[0] - self.rect.topleft[0])
+        return value
 
 running = True
 
@@ -67,6 +70,5 @@ while running:
             running = False
 
     if slider.draw(screen):
-        print('p')
-
-
+        volume = slider.value()
+        pygame.mixer.music.set_volume(volume)
