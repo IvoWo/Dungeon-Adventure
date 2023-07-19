@@ -445,6 +445,7 @@ class Game:
     def __init__(self, gameStateManager, states, FPS):
         self.clock = pygame.time.Clock()
 
+        pygame.init()
         self.gameStateManager = gameStateManager
         self.FPS = FPS
         self.states = states
