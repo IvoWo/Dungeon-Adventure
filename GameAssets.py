@@ -4,6 +4,7 @@ import pygame
 import math
 from random import randrange
 import sys
+import json
 
 
 class Point():
@@ -457,7 +458,15 @@ class Gamestate_start:
             self.gameStateManager.set_state('run')
 
         if self.options_button.draw(self.screen):
-            print('not yet implemented')
+            print('Lautstärke angeben(von 0.0 - 1.0)')
+            while True:
+                user_input = input()
+                try:
+                    float_value = float(user_input)
+                    break  # Exit the loop if a valid float is entered
+                except ValueError:
+                    print("Invalid input. Please enter a floating-point value.")
+            pygame.mixer.music.set_volume(float_value)
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
@@ -521,7 +530,15 @@ class Gamestate_run:
                 self.PauseGame = not self.PauseGame
 
             if self.options_button.draw(self.screen):
-                print('not yet implemented')
+                print('Lautstärke angeben(von 0.0 - 1.0)')
+                while True:
+                    user_input = input()
+                    try:
+                        float_value = float(user_input)
+                        break  # Exit the loop if a valid float is entered
+                    except ValueError:
+                        print("Invalid input. Please enter a floating-point value.")
+                pygame.mixer.music.set_volume(float_value)
 
             if self.main_button.draw(self.screen):
                 pygame.mixer.music.stop()
