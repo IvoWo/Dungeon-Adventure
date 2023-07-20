@@ -592,7 +592,7 @@ class Slider:
                 action = True
             self.clicked = False  
 
-        pygame.draw.rect(screen, ("Grey"), self.rect)
+        pygame.draw.rect(screen, "Grey", self.rect)
         pygame.draw.circle(screen, "Blue", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
 
         if action:

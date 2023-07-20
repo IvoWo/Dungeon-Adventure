@@ -48,8 +48,7 @@ class Slider:
         pygame.draw.rect(screen, ("Grey"), self.rect)
         pygame.draw.circle(screen, "Blue", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
 
-        if action:
-            pygame.display.flip()
+        pygame.display.flip()
 
         self.prev_mouse_state = mouse_state
 
@@ -62,7 +61,7 @@ class Slider:
 
 running = True
 
-slider = Slider(200, 20, 15, 15, 15)
+slider = Slider(200, 20, 15, 200, 200)
 
 while running:
     for event in pygame.event.get():

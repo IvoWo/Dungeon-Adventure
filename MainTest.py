@@ -10,11 +10,6 @@ pygame.display.set_caption('Dungeon-Adventure')
 
 FPS = 120
 
-#Is used to start the Music when the game is opened
-#mixer.music.load('Sounds/Main_Menu_Sound.wav')
-#mixer.music.play(-1)
-#Music_Playing = 'M'
-
 gameStateManager = gameStateManager('start')
 states = {'start':Gamestate_start(screen, gameStateManager), 'run':Gamestate_run(screen, gameStateManager)}
 
