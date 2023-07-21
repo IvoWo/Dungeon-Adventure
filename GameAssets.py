@@ -515,6 +515,7 @@ class Gamestate_run:
 
         self.options_slider = Slider(200, 20, 15, 200, 200)
 
+        #das folgende soll über laden gelößt werden
         self.Room1 = Room('pictures/blackBackground.png')
 
         self.player = pygame.sprite.GroupSingle()
