@@ -458,15 +458,7 @@ class Gamestate_start:
             self.gameStateManager.set_state('run')
 
         if self.options_button.draw(self.screen):
-            print('Lautstärke angeben(von 0.0 - 1.0)')
-            while True:
-                user_input = input()
-                try:
-                    float_value = float(user_input)
-                    break  # Exit the loop if a valid float is entered
-                except ValueError:
-                    print("Invalid input. Please enter a floating-point value.")
-            pygame.mixer.music.set_volume(float_value)
+            self.gameStateManager.set_state('options')
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
@@ -476,6 +468,17 @@ class Game:
         self.gameStateManager = gameStateManager
         self.FPS = FPS
         self.states = states
+        self.data = {'volume': float}
+        self.load = True
+
+        try:
+            with open('options.txt') as score_file:
+                self.data = json.load(score_file)
+        except:
+            self.load = False
+
+        if self.load:
+            pygame.mixer.music.set_volume(self.data['volume'])
 
     def run(self):
         while True:
@@ -510,7 +513,7 @@ class Gamestate_run:
         self.options_button = Button(254, 190, self.Options_img, 1.5)
         self.main_button = Button(278, 240, self.Main_img, 1.5)
 
-        self.options_slider = Slider(200, 20, 15, 15, 15)
+        self.options_slider = Slider(200, 20, 15, 200, 200)
 
     def run(self):
         self.screen.blit(self.image, (0,0))
@@ -554,7 +557,37 @@ class Gamestate_options:
 
     def __init__(self, screen, gameStateManager) -> None:
         self.screen = screen
-        self.gameStateManager = gameStateManager
+        self.gameStateManager = gameStateManager 
+        self.data = {'volume': float}
+
+        try:
+            with open('options.txt') as score_file:
+                self.data = json.load(score_file)
+        except:
+            print('*')
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+        self.Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
+        
+        self.continue_button = Button(200, 500, self.Continue_img, 1.5)
+
+        self.sound_slider = Slider(200, 20, 15, 200, 200)
+        self.sound_slider.setSliderPosition(self.data['volume'])
+
+    def run(self):
+        self.screen.blit(self.image, (0,0))
+
+        if self.continue_button.draw(self.screen):
+            with open('options.txt','w') as score_file:
+                json.dump(self.data, score_file)
+            self.gameStateManager.set_state('start')
+            
+
+        if self.sound_slider.draw(self.screen):
+            pygame.mixer.music.set_volume(self.sound_slider.value())
+            self.data['volume'] = pygame.mixer.music.get_volume()
+
+        
 
 class Slider:
 
@@ -566,26 +599,26 @@ class Slider:
         self.clicked = False
         self.prev_mouse_state = False
 
+    def setSliderPosition(self, x):
+        self.slider_pos = (x * (self.rect.topright[0] - self.rect.topleft[0]) + self.rect.topleft[0])
 
     def draw(self, screen):
         action = False
 
         pos = pygame.mouse.get_pos()
         mouse_state = pygame.mouse.get_pressed()[0] == 1
-        dragging = False
 
         if mouse_state:
             self.clicked = True
             if self.slider_pos - self.radius <= pos[0] <= self.slider_pos + self.radius:
-                if self.rect.topleft[1] <= pos[1] <= self.rect.topleft[1] + self.rect.height + self.radius:
-                    dragging = True
+                #checks if the mouse is on the slider-bar
+                if self.rect.topleft[0] <= pos[0] <= self.rect.bottomright[0]:
+                    if self.rect.topleft[1] <= pos[1] <= self.rect.bottomright[1]:
+                        self.slider_pos = pos[0]
             
-            elif self.rect.topleft <= pos <= self.rect.bottomright:
-                self.slider_pos = pos[0]
-
-            if dragging:
-                mouse_x = pygame.mouse.get_pos()[0]
-                self.slider_pos = max(self.radius, min(self.rect.width + self.radius, mouse_x))
+            elif self.rect.topleft[0] <= pos[0] <= self.rect.bottomright[0]:
+                if self.rect.topleft[1] <= pos[1] <= self.rect.bottomright[1]:
+                    self.slider_pos = pos[0]
 
         if not mouse_state and self.prev_mouse_state:
             if self.clicked:

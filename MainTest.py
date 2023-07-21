@@ -11,7 +11,7 @@ pygame.display.set_caption('Dungeon-Adventure')
 FPS = 120
 
 gameStateManager = gameStateManager('start')
-states = {'start':Gamestate_start(screen, gameStateManager), 'run':Gamestate_run(screen, gameStateManager)}
+states = {'start':Gamestate_start(screen, gameStateManager), 'run':Gamestate_run(screen, gameStateManager), 'options':Gamestate_options(screen, gameStateManager)}
 
 game = Game(gameStateManager, states, FPS)
 

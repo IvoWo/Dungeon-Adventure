@@ -5,6 +5,9 @@ pygame.init()
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 600
 
+pygame.mixer.music.load('Sounds/Running_Sound.wav')
+pygame.mixer.music.play(-1)
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Slider Demo")
         
@@ -24,20 +27,20 @@ class Slider:
 
         pos = pygame.mouse.get_pos()
         mouse_state = pygame.mouse.get_pressed()[0] == 1
-        dragging = False
 
         if mouse_state:
             self.clicked = True
+            #checks if mouse is on slider
             if self.slider_pos - self.radius <= pos[0] <= self.slider_pos + self.radius:
-                if self.rect.topleft[1] <= pos[1] <= self.rect.topleft[1] + self.rect.height + self.radius:
-                    dragging = True
-            
-            elif self.rect.topleft <= pos <= self.rect.bottomright:
-                self.slider_pos = pos[0]
+                #checks if the mouse is on the slider-bar
+                if self.rect.topleft[0] <= pos[0] <= self.rect.bottomright[0]:
+                    if self.rect.topleft[1] <= pos[1] <= self.rect.bottomright[1]:
+                        self.slider_pos = pos[0]
 
-            if dragging:
-                mouse_x = pygame.mouse.get_pos()[0]
-                self.slider_pos = max(self.radius, min(self.rect.width + self.radius, mouse_x))
+            
+            elif self.rect.topleft[0] <= pos[0] <= self.rect.bottomright[0]:
+                if self.rect.topleft[1] <= pos[1] <= self.rect.bottomright[1]:
+                    self.slider_pos = pos[0]
 
         if not mouse_state and self.prev_mouse_state:
             if self.clicked:
@@ -47,7 +50,6 @@ class Slider:
         screen.fill("Black")
         pygame.draw.rect(screen, ("Grey"), self.rect)
         pygame.draw.circle(screen, "Blue", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
-
         pygame.display.flip()
 
         self.prev_mouse_state = mouse_state
