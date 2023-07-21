@@ -515,6 +515,35 @@ class Gamestate_run:
 
         self.options_slider = Slider(200, 20, 15, 200, 200)
 
+        self.Room1 = Room('pictures/blackBackground.png')
+
+        self.player = pygame.sprite.GroupSingle()
+        self.player1 = Player(self.Room1)
+        self.player.add(self.player1)
+
+
+        self.Sword = Weapon("pictures/Sword1.png", 
+                "Sword", "Dangery",
+                1, 200, 23, 23,
+                [Image("pictures/Sword1.png")], 
+                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")],
+                [Image("pictures/Sword1.png")],
+                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")],
+                [Image("pictures/Sword1.png")],
+                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")])
+
+        self.FlameSword = Weapon("pictures/FlameSword1.png", 
+                    "pictures/FlameSword", "carefull: hot", 
+                    2, 200, 150, 150, 
+                    [Image("pictures/FlameSword1.png")],
+                    [Image("pictures/FlameSword1.png"), Image("pictures/FlameSword2.png"), Image("pictures/FlameSword3.png")])
+        self.FlameSword.rect.center = (10, 50)
+
+        self.Room1.Itemlist.add(self.Sword, self.FlameSword)
+
+        self.rock1 = Rock(450, 450)
+        self.Room1.Obstacles.add(self.rock1)
+
     def run(self):
         self.screen.blit(self.image, (0,0))
 
@@ -530,6 +559,13 @@ class Gamestate_run:
             if(not pygame.mixer.music.get_busy()):
                 pygame.mixer.music.load('Sounds/Running_Sound.wav')
                 pygame.mixer.music.play(-1)
+
+            self.Room1.draw(self.screen)
+            self.player.draw(self.screen)
+            self.player.update(self.screen)
+            #Room1.Itemlist.draw(screen)
+            self.Room1.Itemlist.update()
+
         else:
             if (self.options == False):
                 pygame.mixer.music.pause()
