@@ -663,7 +663,7 @@ class Slider:
         self.clicked = False
         self.prev_mouse_state = False
 
-    def setSliderPosition(self, x):
+    def setSliderPosition(self, x:float):
         self.slider_pos = (x * (self.rect.topright[0] - self.rect.topleft[0]) + self.rect.topleft[0])
 
     def draw(self, screen):
