@@ -4,17 +4,38 @@ import pygame
 import math
 from random import randrange
 import sys
+import json
 
 
+class State():
+    def __init__(self, MillisecondsPerImage = 0) -> None:
+        self.MillisecondsPerImage = MillisecondsPerImage
+        self.CurrentImageIndex = 0
+        self.AnimationStartTime = 0
 
-class SpriteBaseClass(pygame.sprite.Sprite):
+class Face():
+    def __init__(self, Name, StatesImageDict:dict[State , list[str]] = {}, Height = 16, Width = 16) -> None:
+        self.Name = Name
+        self.value = self.scaleFace(self.loadFace(StatesImageDict), Height, Width)
 
-    class State():
-        def __init__(self, MillisecondsPerImage = 0) -> None:
-            self.MillisecondsPerImage = MillisecondsPerImage
-            self.CurrentImageIndex = 0
-            self.AnimationStartTime = 0
-            
+    def scaleFace(self, Face: dict, Height = 16, Width = 16 ):
+        scaleFace = {}
+        for k, v in Face.items():
+            scaleFace[k] = [pygame.transform.scale(x, (Width, Height)) for x in v]
+        return scaleFace
+    
+    def loadFace(self, Face: dict):
+        loadFace = {}
+        print(Face)
+        for k, v in Face.items():
+            loadFace[k] = [pygame.image.load(x).convert_alpha() for x in v]
+        return loadFace
+    
+    def turnFace(self):
+        for k, v in self.value.items():
+            self.value[k] = [pygame.transform.flip(x, True, False) for x in v]
+
+class SpriteBaseClass(pygame.sprite.Sprite):            
     def __init__(self, PictureFilePath : str 
                  ,Height = 16, Width = 16
                  ,RightFace : dict[State , list[str]] = {}
@@ -24,10 +45,11 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.transform.scale(pygame.image.load(PictureFilePath).convert_alpha(), (Width, Height))
         self.rect = self.image.get_rect()
-        self.RightFace = self.scaleFace(self.loadFace(RightFace), Height, Width)
-        self.LeftFace = self.turnFace(self.RightFace)
-        self.FrontFace = self.scaleFace(self.loadFace(FrontFace), Height, Width)
-        self.BackFace = self.scaleFace(self.loadFace(BackFace), Height, Width)
+        self.RightFace = Face("right", RightFace, Height, Width)
+        self.LeftFace = Face("left", (RightFace), Height, Width)
+        #self.LeftFace.turnFace()
+        self.FrontFace = Face("front", FrontFace, Height, Width)
+        self.BackFace = Face("back", BackFace, Height, Width)
         self.CurrentFace = self.FrontFace
         self.CurrentState = self.State()
     
@@ -75,16 +97,24 @@ class SpriteBaseClass(pygame.sprite.Sprite):
                     turnFace[key] = Face[key]
         return turnFace
 
+    def turn(self, Direction):
+        """Directions are: right, left, front, back as Strings""" 
+        for x in [self.RightFace, self.LeftFace, self.FrontFace, self.BackFace]:
+            if x.Name == Direction: self.CurrentFace = x
+
     def animateSelf(self):
+        """it is important to set currentState und currentFace \n
+            to actual values of your class-object before using \n
+            this method"""
         if self.CurrentState.AnimationStartTime == 0:
             self.CurrentState.AnimationStartTime = pygame.time.get_ticks()
         TimeDiff =  pygame.time.get_ticks() - self.CurrentState.AnimationStartTime
         if TimeDiff > self.CurrentState.MillisecondsPerImage:
             self.CurrentState.CurrentImageIndex += 1
             self.CurrentState.AnimationStartTime = 0           
-        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
+        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace.value[self.CurrentState]) : 
             self.CurrentState.CurrentImageIndex = 0
-        self.image = self.CurrentFace[self.CurrentState][self.CurrentState.CurrentImageIndex]
+        self.image = self.CurrentFace.value[self.CurrentState][self.CurrentState.CurrentImageIndex]
 
 class Obstacle(SpriteBaseClass):
     def __init__(self, image, x, y) -> None:
@@ -105,8 +135,8 @@ class Player(SpriteBaseClass):
     ActiveItemSlot = pygame.sprite.Group()
     
     def __init__(self, currentRoom):
-        self.Default = self.State(MillisecondsPerImage= 5000)
-        self.Walking = self.State(MillisecondsPerImage= 200)
+        self.Default = State(MillisecondsPerImage= 5000)
+        self.Walking = State(MillisecondsPerImage= 200)
         
         self.RightFace = {self.Default: ["pictures/SideWalk1.png"], 
                         self.Walking: ["pictures/SideWalk1.png", "pictures/SideWalk2.png"] }
@@ -197,6 +227,7 @@ class Player(SpriteBaseClass):
         if self.ActiveItemSlot:
             for item in self.ActiveItemSlot:
                 item.rect.center = self.rect.center
+                item.turn(self.CurrentFace.Name)
             self.ActiveItemSlot.update()
             self.ActiveItemSlot.draw(Screen)
 
@@ -206,9 +237,9 @@ class Item(SpriteBaseClass):
                  Name : str = "",
                  Description: str = "",
                  Height=16, Width=16, 
-                 RightFace: dict[SpriteBaseClass.State, list[str]] = {}, 
-                 FrontFace: dict[SpriteBaseClass.State, list[str]] = {}, 
-                 BackFace: dict[SpriteBaseClass.State, list[str]] = {}):
+                 RightFace: dict[State, list[str]] = {}, 
+                 FrontFace: dict[State, list[str]] = {}, 
+                 BackFace: dict[State, list[str]] = {}):
         self.Name = Name
         self.Description = Description
         super().__init__(PictureFilePath, Height, Width, RightFace, FrontFace, BackFace)
@@ -225,8 +256,6 @@ class Weapon(Item):
     # for example bullest, checking bullet collision can then be done be checking againt the whole group
     HurtboxGroup = pygame.sprite.Group()
     AttackStarttime = 0
-    Default = SpriteBaseClass.State()
-    Attacking = SpriteBaseClass.State(200)
 
     def __init__(self, 
                  PictureFilePath: str, 
@@ -243,8 +272,8 @@ class Weapon(Item):
                  BackFaceAttackingImages: list[str] = []):
         self.Damage = Damage
         self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
-        self.Default = self.State()
-        self.Attacking = self.State(200)
+        self.Default = State()
+        self.Attacking = State(self.AttackDurationInMilliseconds/len(RightFaceAttackingImages))
         RightFace = {self.Default: RightFaceDefaultImages,
                      self.Attacking: RightFaceAttackingImages}
         FrontFace = {self.Default: FrontFaceDefaultImages,
@@ -444,7 +473,15 @@ class Gamestate_start:
             self.gameStateManager.set_state('run')
 
         if self.options_button.draw(self.screen):
-            print('not yet implemented')
+            print('Lautstärke angeben(von 0.0 - 1.0)')
+            while True:
+                user_input = input()
+                try:
+                    float_value = float(user_input)
+                    break  # Exit the loop if a valid float is entered
+                except ValueError:
+                    print("Invalid input. Please enter a floating-point value.")
+            pygame.mixer.music.set_volume(float_value)
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
@@ -508,7 +545,15 @@ class Gamestate_run:
                 self.PauseGame = not self.PauseGame
 
             if self.options_button.draw(self.screen):
-                print('not yet implemented')
+                print('Lautstärke angeben(von 0.0 - 1.0)')
+                while True:
+                    user_input = input()
+                    try:
+                        float_value = float(user_input)
+                        break  # Exit the loop if a valid float is entered
+                    except ValueError:
+                        print("Invalid input. Please enter a floating-point value.")
+                pygame.mixer.music.set_volume(float_value)
 
             if self.main_button.draw(self.screen):
                 pygame.mixer.music.stop()
