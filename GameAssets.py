@@ -4,7 +4,6 @@ import pygame
 import math
 from random import randrange
 import sys
-import json
 
 
 class Point():
@@ -56,11 +55,19 @@ class Face():
                     print(f"{Point.Name}: {Point.X, Point.Y}")
 
 class SpriteBaseClass(pygame.sprite.Sprite):
-    def __init__(self, PictureFilepath: str,
-                 Width = 16, Height = 16,
-                 RightFace = Face(), LeftFace= Face(), 
-                 FrontFace = Face(), BackFace = Face(), 
-                 CurrentFace = Face(), CurrentState = State()):
+
+    class State():
+        def __init__(self, MillisecondsPerImage = 0) -> None:
+            self.MillisecondsPerImage = MillisecondsPerImage
+            self.CurrentImageIndex = 0
+            self.AnimationStartTime = 0
+            
+    def __init__(self, PictureFilePath : str 
+                 ,Height = 16, Width = 16
+                 ,RightFace : dict[State , list[str]] = {}
+                 ,FrontFace : dict[State , list[str]] = {}
+                 ,BackFace : dict[State , list[str]] = {}
+                 ):
         super().__init__()
 
         self.Right = RightFace
@@ -80,18 +87,23 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.CurrentImage = Image()
         self.image = pygame.transform.scale(pygame.image.load(PictureFilepath).convert_alpha(), (Width, Height))
         self.rect = self.image.get_rect()
-        
+        self.RightFace = self.scaleFace(self.loadFace(RightFace), Height, Width)
+        self.LeftFace = self.turnFace(self.RightFace)
+        self.FrontFace = self.scaleFace(self.loadFace(FrontFace), Height, Width)
+        self.BackFace = self.scaleFace(self.loadFace(BackFace), Height, Width)
+        self.CurrentFace = self.FrontFace
+        self.CurrentState = self.State()
+    
+
+
     def animateSelf(self):
-        """it is important to set currentState und currentFace \n
-            to actual values of your class-object before using \n
-            this method"""
         if self.CurrentState.AnimationStartTime == 0:
             self.CurrentState.AnimationStartTime = pygame.time.get_ticks()
         TimeDiff =  pygame.time.get_ticks() - self.CurrentState.AnimationStartTime
         if TimeDiff > self.CurrentState.MillisecondsPerImage:
             self.CurrentState.CurrentImageIndex += 1
-            self.CurrentState.AnimationStartTime = 0
-        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace.StatesWithImages[self.CurrentState]):
+            self.CurrentState.AnimationStartTime = 0           
+        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
             self.CurrentState.CurrentImageIndex = 0
         if self.CurrentFace.StatesWithImages[self.CurrentState]:
             self.CurrentImage = self.CurrentFace.StatesWithImages[self.CurrentState][self.CurrentState.CurrentImageIndex]
@@ -118,6 +130,8 @@ class Player(SpriteBaseClass):
     Inventory = []
     Movementspeed = 3
     Health = 100
+    IsWalking = False
+    WalkStartTime = 0
     ActiveItemSlot = pygame.sprite.Group()
     
     def __init__(self, currentRoom):
@@ -181,19 +195,19 @@ class Player(SpriteBaseClass):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             self.rect.y += -self.Movementspeed
-            self.CurrentFace = self.Back
+            self.CurrentFace = self.BackFace
             self.CurrentState = self.Walking
         if keys[pygame.K_DOWN]:
             self.rect.y += self.Movementspeed
-            self.CurrentFace = self.Front
+            self.CurrentFace = self.FrontFace
             self.CurrentState = self.Walking
         if keys[pygame.K_LEFT]:
             self.rect.x += -self.Movementspeed
-            self.CurrentFace = self.Left
+            self.CurrentFace = self.LeftFace
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.CurrentFace = self.Right
+            self.CurrentFace = self.RightFace
             self.CurrentState = self.Walking
         if keys[pygame.K_e]:
             print(self.inspectInventory())
@@ -232,20 +246,18 @@ class Player(SpriteBaseClass):
             self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
-    def __init__(self, PictureFilepath: str, 
-                 Name :str, Description : str, 
-                 Width=16, Height=16, 
-                 RightFace=Face(), LeftFace=Face, 
-                 FrontFace=Face(), BackFace=Face(), 
-                 CurrentFace=Face(), CurrentState=State()):
-        super().__init__(PictureFilepath, 
-                         Width, Height, 
-                         RightFace, LeftFace, 
-                         FrontFace, BackFace, 
-                         CurrentFace, CurrentState)
+    def __init__(self, 
+                 PictureFilePath: str, 
+                 Name : str = "",
+                 Description: str = "",
+                 Height=16, Width=16, 
+                 RightFace: dict[SpriteBaseClass.State, list[str]] = {}, 
+                 FrontFace: dict[SpriteBaseClass.State, list[str]] = {}, 
+                 BackFace: dict[SpriteBaseClass.State, list[str]] = {}):
         self.Name = Name
         self.Description = Description
-
+        super().__init__(PictureFilePath, Height, Width, RightFace, FrontFace, BackFace)
+    
     def getDescription(self):
         return(self.Name + ": " + self.Description)
     
@@ -258,6 +270,8 @@ class Weapon(Item):
     # for example bullest, checking bullet collision can then be done be checking againt the whole group
     HurtboxGroup = pygame.sprite.Group()
     AttackStarttime = 0
+    Default = SpriteBaseClass.State()
+    Attacking = SpriteBaseClass.State(200)
 
     def __init__(self, 
                  PictureFilePath: str, 
@@ -265,13 +279,13 @@ class Weapon(Item):
                  Description: str = "", 
                  Damage: int = 1,
                  AttackDurationInMilliseconds = 500, 
-                 Width=16, Height=16, 
-                 RightFaceDefaultImages: list[Image] = [],
-                 RightFaceAttackingImages: list[Image] = [], 
-                 FrontFaceDefaultImages: list[Image] = [],
-                 FrontFaceAttackingImages: list[Image] = [], 
-                 BackFaceDefaultImages: list[Image] = [],
-                 BackFaceAttackingImages: list[Image] = []):
+                 Height=16, Width=16, 
+                 RightFaceDefaultImages: list[str] = [],
+                 RightFaceAttackingImages: list[str] = [], 
+                 FrontFaceDefaultImages: list[str] = [],
+                 FrontFaceAttackingImages: list[str] = [], 
+                 BackFaceDefaultImages: list[str] = [],
+                 BackFaceAttackingImages: list[str] = []):
         self.Damage = Damage
         self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
         self.Default = State()
@@ -479,15 +493,7 @@ class Gamestate_start:
             self.gameStateManager.set_state('run')
 
         if self.options_button.draw(self.screen):
-            print('Lautstärke angeben(von 0.0 - 1.0)')
-            while True:
-                user_input = input()
-                try:
-                    float_value = float(user_input)
-                    break  # Exit the loop if a valid float is entered
-                except ValueError:
-                    print("Invalid input. Please enter a floating-point value.")
-            pygame.mixer.music.set_volume(float_value)
+            print('not yet implemented')
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
@@ -551,15 +557,7 @@ class Gamestate_run:
                 self.PauseGame = not self.PauseGame
 
             if self.options_button.draw(self.screen):
-                print('Lautstärke angeben(von 0.0 - 1.0)')
-                while True:
-                    user_input = input()
-                    try:
-                        float_value = float(user_input)
-                        break  # Exit the loop if a valid float is entered
-                    except ValueError:
-                        print("Invalid input. Please enter a floating-point value.")
-                pygame.mixer.music.set_volume(float_value)
+                print('not yet implemented')
 
             if self.main_button.draw(self.screen):
                 pygame.mixer.music.stop()

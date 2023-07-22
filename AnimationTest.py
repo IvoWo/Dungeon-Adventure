@@ -19,7 +19,7 @@ playerGroup = pygame.sprite.GroupSingle()
 player1 = Player(Room1)
 playerGroup.add(player1)
 
-Sword = Weapon("pictures/Sword1.png", 
+Sword = Weapon("pictures/Sword1.png",
                 "Sword", "Dangery",
                 1, 200, 50, 50,
                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
