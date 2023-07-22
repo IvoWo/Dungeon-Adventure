@@ -56,19 +56,14 @@ class Face():
 
 class SpriteBaseClass(pygame.sprite.Sprite):
 
-    class State():
-        def __init__(self, MillisecondsPerImage = 0) -> None:
-            self.MillisecondsPerImage = MillisecondsPerImage
-            self.CurrentImageIndex = 0
-            self.AnimationStartTime = 0
-            
-    def __init__(self, PictureFilePath : str 
-                 ,Height = 16, Width = 16
-                 ,RightFace : dict[State , list[str]] = {}
-                 ,FrontFace : dict[State , list[str]] = {}
-                 ,BackFace : dict[State , list[str]] = {}
-                 ):
+    def __init__(self, PictureFilepath: str,
+                 Width = 16, Height = 16,
+                 RightFace = Face(), LeftFace= Face(), 
+                 FrontFace = Face(), BackFace = Face(), 
+                 CurrentFace = Face(), CurrentState = State()):
         super().__init__()
+        self.image = pygame.transform.scale(pygame.image.load(PictureFilepath).convert_alpha(), (Width, Height))
+        self.rect = self.image.get_rect()
 
         self.Right = RightFace
         self.Left = LeftFace
@@ -82,17 +77,11 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.Left.scaleFace(Width, Height)
         self.Front.scaleFace(Width, Height)
         self.Back.scaleFace(Width, Height)
-        
         self.CurrentFace.scaleFace(Width, Height)
+        
         self.CurrentImage = Image()
-        self.image = pygame.transform.scale(pygame.image.load(PictureFilepath).convert_alpha(), (Width, Height))
-        self.rect = self.image.get_rect()
-        self.RightFace = self.scaleFace(self.loadFace(RightFace), Height, Width)
-        self.LeftFace = self.turnFace(self.RightFace)
-        self.FrontFace = self.scaleFace(self.loadFace(FrontFace), Height, Width)
-        self.BackFace = self.scaleFace(self.loadFace(BackFace), Height, Width)
-        self.CurrentFace = self.FrontFace
-        self.CurrentState = self.State()
+        self.CurrentFace = CurrentFace
+        self.CurrentState = CurrentState
     
 
 
@@ -103,7 +92,7 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         if TimeDiff > self.CurrentState.MillisecondsPerImage:
             self.CurrentState.CurrentImageIndex += 1
             self.CurrentState.AnimationStartTime = 0           
-        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace[self.CurrentState]) : 
+        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace.StatesWithImages[self.CurrentState]) : 
             self.CurrentState.CurrentImageIndex = 0
         if self.CurrentFace.StatesWithImages[self.CurrentState]:
             self.CurrentImage = self.CurrentFace.StatesWithImages[self.CurrentState][self.CurrentState.CurrentImageIndex]
@@ -195,19 +184,19 @@ class Player(SpriteBaseClass):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_UP]:
             self.rect.y += -self.Movementspeed
-            self.CurrentFace = self.BackFace
+            self.CurrentFace = self.Back
             self.CurrentState = self.Walking
         if keys[pygame.K_DOWN]:
             self.rect.y += self.Movementspeed
-            self.CurrentFace = self.FrontFace
+            self.CurrentFace = self.Front
             self.CurrentState = self.Walking
         if keys[pygame.K_LEFT]:
             self.rect.x += -self.Movementspeed
-            self.CurrentFace = self.LeftFace
+            self.CurrentFace = self.Left
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.Movementspeed
-            self.CurrentFace = self.RightFace
+            self.CurrentFace = self.Right
             self.CurrentState = self.Walking
         if keys[pygame.K_e]:
             print(self.inspectInventory())
@@ -246,17 +235,19 @@ class Player(SpriteBaseClass):
             self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
-    def __init__(self, 
-                 PictureFilePath: str, 
-                 Name : str = "",
-                 Description: str = "",
-                 Height=16, Width=16, 
-                 RightFace: dict[SpriteBaseClass.State, list[str]] = {}, 
-                 FrontFace: dict[SpriteBaseClass.State, list[str]] = {}, 
-                 BackFace: dict[SpriteBaseClass.State, list[str]] = {}):
+    def __init__(self, PictureFilepath: str, 
+                 Name :str, Description : str, 
+                 Width=16, Height=16, 
+                 RightFace=Face(), LeftFace=Face, 
+                 FrontFace=Face(), BackFace=Face(), 
+                 CurrentFace=Face(), CurrentState=State()):
+        super().__init__(PictureFilepath, 
+                         Width, Height, 
+                         RightFace, LeftFace, 
+                         FrontFace, BackFace, 
+                         CurrentFace, CurrentState)
         self.Name = Name
         self.Description = Description
-        super().__init__(PictureFilePath, Height, Width, RightFace, FrontFace, BackFace)
     
     def getDescription(self):
         return(self.Name + ": " + self.Description)
@@ -270,8 +261,8 @@ class Weapon(Item):
     # for example bullest, checking bullet collision can then be done be checking againt the whole group
     HurtboxGroup = pygame.sprite.Group()
     AttackStarttime = 0
-    Default = SpriteBaseClass.State()
-    Attacking = SpriteBaseClass.State(200)
+    Default = State()
+    Attacking = State(200)
 
     def __init__(self, 
                  PictureFilePath: str, 
