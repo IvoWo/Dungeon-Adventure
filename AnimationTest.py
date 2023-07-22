@@ -19,24 +19,16 @@ playerGroup = pygame.sprite.GroupSingle()
 player1 = Player(Room1)
 playerGroup.add(player1)
 
-Sword = Weapon("pictures/Sword1.png", 
+Sword = Weapon("pictures/Sword1.png",
                 "Sword", "Dangery",
-                1, 200, 23, 23,
-                [Image("pictures/Sword1.png")], 
-                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")],
-                [Image("pictures/Sword1.png")],
-                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")],
-                [Image("pictures/Sword1.png")],
-                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")])
-
-FlameSword = Weapon("pictures/FlameSword1.png", 
-                    "pictures/FlameSword", "carefull: hot", 
-                    2, 200, 150, 150, 
-                    [Image("pictures/FlameSword1.png")],
-                    [Image("pictures/FlameSword1.png"), Image("pictures/FlameSword2.png"), Image("pictures/FlameSword3.png")])
-FlameSword.rect.center = (10, 50)
-
-Room1.Itemlist.add(Sword, FlameSword)
+                1, 1000, 16, 16,
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
+                ["pictures/Sword1.png"],
+                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"])
+Room1.Itemlist.add(Sword)
 
 
 # game loop
