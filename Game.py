@@ -53,13 +53,13 @@ player.add(player1)
 
 Sword = Weapon("pictures/Sword1.png",
                 "Sword", "Dangery",
-                1, 1000, 16, 16,
-                ["pictures/Sword1.png"],
-                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
-                ["pictures/Sword1.png"],
-                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"],
-                ["pictures/Sword1.png"],
-                ["pictures/Sword1.png", "pictures/Sword2.png", "pictures/Sword3.png"])
+                1, 200, 50, 50,
+                [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
+                [Image("pictures/Sword1.png", [Point(19, 87, "Handle")]), Image("pictures/Sword2.png", [Point(20, 85, "Handle")]), Image("pictures/Sword3.png", [Point(20, 89, "Handle")])],
+                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
+                [Image("pictures/Sword1.png", [Point(19, 87, "Handle")]), Image("pictures/Sword2.png", [Point(20, 85, "Handle")]), Image("pictures/Sword3.png", [Point(20, 89, "Handle")])],
+                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
+                [Image("pictures/Sword1.png", [Point(19, 87, "Handle")]), Image("pictures/Sword2.png", [Point(20, 85, "Handle")]), Image("pictures/Sword3.png", [Point(20, 89, "Handle")])])
 Room1.Itemlist.add(Sword)
 
 rock1 = Rock(450, 450)
