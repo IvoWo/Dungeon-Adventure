@@ -4,6 +4,7 @@ import pygame
 import math
 from random import randrange
 import sys
+import json
 
 
 class Point():
@@ -484,15 +485,27 @@ class Gamestate_start:
             self.gameStateManager.set_state('run')
 
         if self.options_button.draw(self.screen):
-            print('not yet implemented')
+            self.gameStateManager.set_state('options')
 
 class Game:  
     def __init__(self, gameStateManager, states, FPS):
         self.clock = pygame.time.Clock()
 
+        pygame.init()
         self.gameStateManager = gameStateManager
         self.FPS = FPS
         self.states = states
+        self.data = {'volume': float}
+        self.load = True
+
+        try:
+            with open('options.txt') as score_file:
+                self.data = json.load(score_file)
+        except:
+            self.load = False
+
+        if self.load:
+            pygame.mixer.music.set_volume(self.data['volume'])
 
     def run(self):
         while True:
@@ -516,6 +529,7 @@ class Gamestate_run:
         self.screen = screen
         self.gameStateManager = gameStateManager
         self.PauseGame = False
+        self.options = False
 
         self.image = pygame.transform.rotozoom(pygame.image.load('pictures/blackBackground.png').convert_alpha(), 0, 2)
         self.Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
@@ -525,6 +539,38 @@ class Gamestate_run:
         self.continue_button = Button(250, 145, self.Continue_img, 1.5)
         self.options_button = Button(254, 190, self.Options_img, 1.5)
         self.main_button = Button(278, 240, self.Main_img, 1.5)
+
+        self.options_slider = Slider(200, 20, 15, 200, 200)
+
+        #das folgende soll über laden gelößt werden
+        self.Room1 = Room('pictures/blackBackground.png')
+
+        self.player = pygame.sprite.GroupSingle()
+        self.player1 = Player(self.Room1)
+        self.player.add(self.player1)
+
+
+        self.Sword = Weapon("pictures/Sword1.png", 
+                "Sword", "Dangery",
+                1, 200, 23, 23,
+                [Image("pictures/Sword1.png")], 
+                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")],
+                [Image("pictures/Sword1.png")],
+                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")],
+                [Image("pictures/Sword1.png")],
+                [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")])
+
+        self.FlameSword = Weapon("pictures/FlameSword1.png", 
+                    "pictures/FlameSword", "carefull: hot", 
+                    2, 200, 150, 150, 
+                    [Image("pictures/FlameSword1.png")],
+                    [Image("pictures/FlameSword1.png"), Image("pictures/FlameSword2.png"), Image("pictures/FlameSword3.png")])
+        self.FlameSword.rect.center = (10, 50)
+
+        self.Room1.Itemlist.add(self.Sword, self.FlameSword)
+
+        self.rock1 = Rock(450, 450)
+        self.Room1.Obstacles.add(self.rock1)
 
     def run(self):
         self.screen.blit(self.image, (0,0))
@@ -541,16 +587,119 @@ class Gamestate_run:
             if(not pygame.mixer.music.get_busy()):
                 pygame.mixer.music.load('Sounds/Running_Sound.wav')
                 pygame.mixer.music.play(-1)
+
+            self.Room1.draw(self.screen)
+            self.player.draw(self.screen)
+            self.player.update(self.screen)
+            #Room1.Itemlist.draw(screen)
+            self.Room1.Itemlist.update()
+
         else:
-            pygame.mixer.music.pause()
+            if (self.options == False):
+                pygame.mixer.music.pause()
 
-            if self.continue_button.draw(self.screen):
-                self.PauseGame = not self.PauseGame
+                if self.continue_button.draw(self.screen):
+                    self.PauseGame = not self.PauseGame
 
-            if self.options_button.draw(self.screen):
-                print('not yet implemented')
+                if self.options_button.draw(self.screen):
+                    self.options = True
 
-            if self.main_button.draw(self.screen):
-                pygame.mixer.music.stop()
-                self.PauseGame = False
-                self.gameStateManager.set_state('start')
+                if self.main_button.draw(self.screen):
+                    pygame.mixer.music.stop()
+                    self.PauseGame = False
+                    self.gameStateManager.set_state('start')
+
+            else:
+                if self.options_slider.draw(self.screen):
+                    pygame.mixer.music.set_volume(self.options_slider.value())
+
+                if self.continue_button.draw(self.screen):
+                    self.options = False
+
+
+class Gamestate_options:
+
+    def __init__(self, screen, gameStateManager) -> None:
+        self.screen = screen
+        self.gameStateManager = gameStateManager 
+        self.data = {'volume': float}
+
+        try:
+            with open('options.txt') as score_file:
+                self.data = json.load(score_file)
+        except:
+            print('*')
+
+        self.image = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
+        self.Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
+        
+        self.continue_button = Button(200, 500, self.Continue_img, 1.5)
+
+        self.sound_slider = Slider(200, 20, 15, 200, 200)
+        self.sound_slider.setSliderPosition(self.data['volume'])
+
+    def run(self):
+        self.screen.blit(self.image, (0,0))
+
+        if self.continue_button.draw(self.screen):
+            with open('options.txt','w') as score_file:
+                json.dump(self.data, score_file)
+            self.gameStateManager.set_state('start')
+            
+
+        if self.sound_slider.draw(self.screen):
+            pygame.mixer.music.set_volume(self.sound_slider.value())
+            self.data['volume'] = pygame.mixer.music.get_volume()
+
+        
+
+class Slider:
+
+    def __init__(self, width, height, radius, x, y) -> None:
+
+        self.rect = pygame.Rect(x,y,width,height)
+        self.radius = radius
+        self.slider_pos = x + width
+        self.clicked = False
+        self.prev_mouse_state = False
+
+    def setSliderPosition(self, x):
+        self.slider_pos = (x * (self.rect.topright[0] - self.rect.topleft[0]) + self.rect.topleft[0])
+
+    def draw(self, screen):
+        action = False
+
+        pos = pygame.mouse.get_pos()
+        mouse_state = pygame.mouse.get_pressed()[0] == 1
+
+        if mouse_state:
+            self.clicked = True
+            if self.slider_pos - self.radius <= pos[0] <= self.slider_pos + self.radius:
+                #checks if the mouse is on the slider-bar
+                if self.rect.topleft[0] <= pos[0] <= self.rect.bottomright[0]:
+                    if self.rect.topleft[1] <= pos[1] <= self.rect.bottomright[1]:
+                        self.slider_pos = pos[0]
+            
+            elif self.rect.topleft[0] <= pos[0] <= self.rect.bottomright[0]:
+                if self.rect.topleft[1] <= pos[1] <= self.rect.bottomright[1]:
+                    self.slider_pos = pos[0]
+
+        if not mouse_state and self.prev_mouse_state:
+            if self.clicked:
+                action = True
+            self.clicked = False  
+
+        pygame.draw.rect(screen, "Grey", self.rect)
+        pygame.draw.circle(screen, "Blue", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
+
+        if action:
+            pygame.display.flip()
+
+        self.prev_mouse_state = mouse_state
+
+        return action
+
+    def value(self):
+
+        value = (self.slider_pos - self.rect.topleft[0]) / (self.rect.topright[0] - self.rect.topleft[0])
+        return value
