@@ -9,14 +9,19 @@ import json
 
 class Point():
     def __init__(self, X:int = 0, Y:int = 0, Name:str = "") -> None:
-        self.Coordinates = (X, Y)
+        """X and Y are the percent of topleft to bottemright \n
+        100x and 100y equals bottomleft"""
+        self.X = X
+        self.Y = Y
         self.Name = Name
 
 class Image():
     def __init__(self,PictureFilePath : str = "", PointsInPicture: list[Point] = []) -> None:
         self.PictureFilePath = PictureFilePath
         self.PointsInPicture = PointsInPicture
-        self.Image = pygame.image.load(self.PictureFilePath).convert_alpha()
+        try: self.Image = pygame.image.load(self.PictureFilePath).convert_alpha()
+        except: self.Image = pygame.Surface((16,16))
+
 
 class State():
     def __init__(self, MillisecondsPerImage = 0) -> None:
@@ -34,16 +39,21 @@ class Face():
         for k, v in self.StatesWithImages.items():
             Images = []
             for I in v:
-                INew = Image(I.PictureFilePath)
+                INew = Image(I.PictureFilePath, [Point(P.X, P.Y, P.Name) for P in I.PointsInPicture])
                 INew.Image = pygame.transform.flip(INew.Image, True, False)
                 Images.append(INew)
             FlippedFace[k] = Images
         return Face(Name, FlippedFace)
     
     def scaleFace(self, Width, Height):
+        """scales the points aswell, given they are initialized with the percent values, see point"""
         for v in self.StatesWithImages.values():
             for Image in v:
                 Image.Image = pygame.transform.scale(Image.Image, (Width, Height))
+                for Point in Image.PointsInPicture:
+                    Point.X *=  Width/100
+                    Point.Y *= Height/100
+                    print(f"{Point.Name}: {Point.X, Point.Y}")
 
 class SpriteBaseClass(pygame.sprite.Sprite):
     def __init__(self, PictureFilepath: str,
@@ -52,17 +62,22 @@ class SpriteBaseClass(pygame.sprite.Sprite):
                  FrontFace = Face(), BackFace = Face(), 
                  CurrentFace = Face(), CurrentState = State()):
         super().__init__()
+
         self.Right = RightFace
-        self.Right.scaleFace(Width, Height)
         self.Left = LeftFace
-        self.Left.scaleFace(Width, Height)
         self.Front = FrontFace
-        self.Front.scaleFace(Width, Height)
         self.Back = BackFace
-        self.Back.scaleFace(Width, Height)
+
         self.CurrentFace = CurrentFace
-        self.CurrentFace.scaleFace(Width, Height)
         self.CurrentState = CurrentState
+
+        self.Right.scaleFace(Width, Height)
+        self.Left.scaleFace(Width, Height)
+        self.Front.scaleFace(Width, Height)
+        self.Back.scaleFace(Width, Height)
+        
+        self.CurrentFace.scaleFace(Width, Height)
+        self.CurrentImage = Image()
         self.image = pygame.transform.scale(pygame.image.load(PictureFilepath).convert_alpha(), (Width, Height))
         self.rect = self.image.get_rect()
         
@@ -79,7 +94,8 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace.StatesWithImages[self.CurrentState]):
             self.CurrentState.CurrentImageIndex = 0
         if self.CurrentFace.StatesWithImages[self.CurrentState]:
-            self.image = self.CurrentFace.StatesWithImages[self.CurrentState][self.CurrentState.CurrentImageIndex].Image
+            self.CurrentImage = self.CurrentFace.StatesWithImages[self.CurrentState][self.CurrentState.CurrentImageIndex]
+            self.image = self.CurrentImage.Image
 
     def turn(self, Direction: str):
         """a Direction is a string \n
@@ -110,21 +126,21 @@ class Player(SpriteBaseClass):
         self.Default = State(MillisecondsPerImage= 5000)
         self.Walking = State(MillisecondsPerImage= 200)
         # Images
-        RightDefaultImages = [Image("pictures/SideWalk1.png")]
-        RightWalkingImages = [Image("pictures/SideWalk1.png"), Image("pictures/SideWalk2.png")]
-        FrontDefaultImages = [Image("pictures/IvoCD.png")]
-        FrontWalkingImages = [Image("pictures/IvoCD.png")]
-        BackDefaultImages = [Image("pictures/BackFace1.png")]
-        BackWalkingImages = [Image("pictures/BackFace1.png")]
+        RightDefaultImages = [Image("pictures/SideWalk1.png", [Point(67,53, "Hand")])]
+        RightWalkingImages = [Image("pictures/SideWalk1.png", [Point(67,53, "Hand")]), Image("pictures/SideWalk2.png", [Point(61, 60, "Hand")])]
+        FrontDefaultImages = [Image("pictures/IvoCD.png", [Point(71, 86, "Hand")])]
+        FrontWalkingImages = [Image("pictures/IvoCD.png", [Point(71, 86, "Hand")])]
+        BackDefaultImages = [Image("pictures/BackFace1.png", [Point(73, 74, "Hand")])]
+        BackWalkingImages = [Image("pictures/BackFace1.png", [Point(73, 74, "Hand")])]
 
         #Faces
         RightFace = Face("right",{self.Default: RightDefaultImages, self.Walking: RightWalkingImages})
-        LeftFace = RightFace.getFlippedFace("left")
         FrontFace = Face("front", {self.Default: FrontDefaultImages, self.Walking: FrontWalkingImages})
         BackFace = Face("back",{self.Default: BackDefaultImages, self.Walking: BackWalkingImages})
+        LeftFace = RightFace.getFlippedFace("left")
 
 
-        super().__init__("pictures/IvoCD.png",32, 32 ,RightFace, LeftFace, FrontFace, BackFace, FrontFace, self.Default)
+        super().__init__("pictures/IvoCD.png",50, 50 ,RightFace, LeftFace, FrontFace, BackFace, FrontFace, self.Default)
         self.Room = currentRoom
 
     def update(self, Screen):
@@ -205,7 +221,12 @@ class Player(SpriteBaseClass):
     def animateActiveItem(self, Screen):
         if self.ActiveItemSlot:
             for item in self.ActiveItemSlot:
-                item.rect.center = self.rect.center
+                for p in [p for p in self.CurrentImage.PointsInPicture if p.Name == "Hand"]:
+                    for p2 in [p for p in item.CurrentImage.PointsInPicture if p.Name == "Handle"]:
+                        item.rect.topleft = (self.rect.topleft[0] + p.X, self.rect.topleft[1] + p.Y)
+                        print(f"Handle is {p2.X, p2.Y}")
+                        item.rect.topleft = (item.rect.topleft[0] - p2.X,item.rect.topleft[1] - p2.Y )
+
                 item.turn(self.CurrentFace.Name)
             self.ActiveItemSlot.update()
             self.ActiveItemSlot.draw(Screen)
@@ -255,16 +276,16 @@ class Weapon(Item):
         self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
         self.Default = State()
         self.Attacking = State(self.AttackDurationInMilliseconds/len(RightFaceAttackingImages))
-        RightFace = {self.Default: RightFaceDefaultImages,
+        RightDict = {self.Default: RightFaceDefaultImages,
                      self.Attacking: RightFaceAttackingImages}
-        FrontFace = {self.Default: FrontFaceDefaultImages,
+        FrontDict = {self.Default: FrontFaceDefaultImages,
                      self.Attacking: FrontFaceAttackingImages}
-        BackFace = {self.Default: BackFaceDefaultImages,
+        BackDict = {self.Default: BackFaceDefaultImages,
                      self.Attacking: BackFaceAttackingImages}
-        RightFace = Face("right", RightFace)
+        RightFace = Face("right", RightDict)
         LeftFace = RightFace.getFlippedFace("left")
-        FrontFace = Face("front", FrontFace)
-        BackFace = Face("back", BackFace)
+        FrontFace = Face("front", FrontDict)
+        BackFace = Face("back", BackDict)
         super().__init__(PictureFilePath, 
                          Name, Description, 
                          Width, Height,
