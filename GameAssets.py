@@ -588,7 +588,7 @@ class Gamestate_run:
         self.Room1 = Room('pictures/blackBackground.png')
 
         self.player = pygame.sprite.GroupSingle()
-        self.player1 = Player(self.Room1)
+        self.player1 = Player(self.Room1, self.screen)
         self.player.add(self.player1)
 
 
