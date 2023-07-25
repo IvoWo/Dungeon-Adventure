@@ -249,10 +249,8 @@ class Item(SpriteBaseClass):
                          FrontFace, BackFace, 
                          CurrentFace, CurrentState)
         self.Name = Name
-        self.Description = Description
-    
-    def getDescription(self):
-        return(self.Name + ": " + self.Description)
+    def getItemPictureFilePath(self):
+        return self.PictureFilepath
     
     def useItem(self):
         pass
