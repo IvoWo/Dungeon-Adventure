@@ -126,7 +126,8 @@ class Player(SpriteBaseClass):
     ActiveItemSlot = pygame.sprite.Group()
     
     
-    def __init__(self, currentRoom):
+    def __init__(self, currentRoom, Screen):
+        self.Screen = Screen
         # Player Animation 
         # States
         self.Default = State(MillisecondsPerImage= 5000)
@@ -199,17 +200,23 @@ class Player(SpriteBaseClass):
             if not self.ActiveItemSlot:
                 self.Room.Itemlist.remove(Item)
                 self.ActiveItemSlot.add(Item)
+                self.Inventory.add(Item)
+            else:
+                self.Room.Itemlist.remove(Item)
+                self.Inventory.add(Item)
 
     def dropItem(self):
         if self.ActiveItemSlot.sprites():
+            self.Inventory.remove(self.ActiveItemSlot.sprites())
             self.Room.Itemlist.add(self.ActiveItemSlot.sprites()[0])
             self.ActiveItemSlot.remove(self.ActiveItemSlot.sprites()[0])
+            
                 
     def inspectInventory(self):
         for Sprite in Player.Inventory:
             image = pygame.transform.scale(Sprite.image , (30, 30))
             iter = Button(self.rect.topright[0], self.rect.topright[1], image, 1)
-            if iter.draw():
+            if iter.draw(self.Screen):
                 print('x')
     
     def inspectItem(self, name):
@@ -240,7 +247,7 @@ class Player(SpriteBaseClass):
             self.CurrentFace = self.Right
             self.CurrentState = self.Walking
         if keys[pygame.K_e]:
-            print(self.inspectInventory())
+            self.inspectInventory()
         if keys[pygame.K_q]:
             self.collectItem()
         if keys[pygame.K_d]:

@@ -16,7 +16,7 @@ background_Main = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Men
 
 Room1 = Room('pictures/blackBackground.png')
 playerGroup = pygame.sprite.GroupSingle()
-player1 = Player(Room1)
+player1 = Player(Room1, screen)
 playerGroup.add(player1)
 
 Sword = Weapon("pictures/Sword1.png",
