@@ -55,7 +55,6 @@ class Face():
                 for Point in Image.PointsInPicture:
                     Point.X = Point.XPercent * Width/100
                     Point.Y = Point.YPercent * Height/100
-                    print(f"{Point.Name}: {Point.X, Point.Y}")
 
 class SpriteBaseClass(pygame.sprite.Sprite):
 
@@ -119,15 +118,16 @@ class Rock(Obstacle):
 
 class Player(SpriteBaseClass):
     
-    Inventory = []
+    Inventory = pygame.sprite.Group()
     Movementspeed = 3
     Health = 100
     IsWalking = False
     WalkStartTime = 0
     ActiveItemSlot = pygame.sprite.Group()
     
+    
     def __init__(self, currentRoom):
-
+        # Player Animation 
         # States
         self.Default = State(MillisecondsPerImage= 5000)
         self.Walking = State(MillisecondsPerImage= 200)
@@ -144,10 +144,44 @@ class Player(SpriteBaseClass):
         FrontFace = Face("front", {self.Default: FrontDefaultImages, self.Walking: FrontWalkingImages})
         BackFace = Face("back",{self.Default: BackDefaultImages, self.Walking: BackWalkingImages})
         LeftFace = RightFace.getFlippedFace("left")
-
-
         super().__init__("pictures/IvoCD.png",50, 50 ,RightFace, LeftFace, FrontFace, BackFace, FrontFace, self.Default)
         self.Room = currentRoom
+
+        # TO DO
+        #Arm Animation Images
+        # RightWalking = []
+        # RightDefault = []
+        # RightBoxing = []
+        # RightArmSwing = []
+
+        # LeftWalking = []
+        # LeftDefault = []
+        # LeftBoxing = []
+        # LeftArmSwing = []
+
+        # FrontWalking = []
+        # FrontDefault = []
+        # FrontBoxing = []
+        # FrontArmSwing = []
+
+        # BackWalking = []
+        # BackDefault = []
+        # BackBoxing = []
+        # BackArmSwing = []
+
+        # Default =  State()
+        # Walking = State(200)
+        # Boxing = State(100)
+        # Swing = State(100)
+
+        # ArmRightFace = Face("right", {})
+
+
+        # self.Arm = SpriteBaseClass("pictures/FlameSword1.png")
+        # self.Arm.Default =  Default
+        # self.Arm.Walking = Walking
+        # self.Arm.Boxing = Boxing
+        # self.Arm.Swing = Swing
 
     def update(self, Screen):
         self.playerControll()
@@ -165,6 +199,11 @@ class Player(SpriteBaseClass):
             if not self.ActiveItemSlot:
                 self.Room.Itemlist.remove(Item)
                 self.ActiveItemSlot.add(Item)
+
+    def dropItem(self):
+        if self.ActiveItemSlot.sprites():
+            self.Room.Itemlist.add(self.ActiveItemSlot.sprites()[0])
+            self.ActiveItemSlot.remove(self.ActiveItemSlot.sprites()[0])
                 
     def inspectInventory(self):
         Itemnames = []
@@ -205,6 +244,8 @@ class Player(SpriteBaseClass):
             print(self.inspectInventory())
         if keys[pygame.K_q]:
             self.collectItem()
+        if keys[pygame.K_d]:
+            self.dropItem()
         if keys[pygame.K_a]:
             for Item in self.ActiveItemSlot:
                 Item.useItem()
@@ -212,16 +253,12 @@ class Player(SpriteBaseClass):
     def stayOnScreen(self):
         '''prevents from leaving the screen'''
         if self.rect.right > 600:
-            print(' X Border right')
             self.rect.right = 600
         if self.rect.left < 0:
-            print('X Border left')
             self.rect.left = 0
         if self.rect.bottom > 600:
-            print(' Y Border Bottom')
             self.rect.bottom = 600
         if self.rect.top < 0:
-            print('Y Border Top')
             self.rect.top = 0
     
     def animateActiveItem(self, Screen):
