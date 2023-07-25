@@ -537,7 +537,7 @@ class Game:
         self.load = True
 
         try:
-            with open('options.txt') as score_file:
+            with open('save/options.txt') as score_file:
                 self.data = json.load(score_file)
         except:
             self.load = False
@@ -663,10 +663,10 @@ class Gamestate_options:
         self.data = {'volume': float}
 
         try:
-            with open('options.txt') as score_file:
+            with open('saves/options.txt') as score_file:
                 self.data = json.load(score_file)
         except:
-            print('*')
+            self.data['volume'] = 1.0
 
         self.image = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Menu.png').convert_alpha(), 0, 6)
         self.Continue_img = pygame.image.load('pictures/Continue_Button.png').convert_alpha()
@@ -680,7 +680,7 @@ class Gamestate_options:
         self.screen.blit(self.image, (0,0))
 
         if self.continue_button.draw(self.screen):
-            with open('options.txt','w') as score_file:
+            with open('save/options.txt','w') as score_file:
                 json.dump(self.data, score_file)
             self.gameStateManager.set_state('start')
             
@@ -728,7 +728,7 @@ class Slider:
             self.clicked = False  
 
         pygame.draw.rect(screen, "Grey", self.rect)
-        pygame.draw.circle(screen, "Blue", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
+        pygame.draw.circle(screen, "Black", (self.slider_pos, (self.rect.topleft[0] + self.rect.height/2)), self.radius)
 
         if action:
             pygame.display.flip()
