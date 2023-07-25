@@ -189,7 +189,24 @@ class Player(SpriteBaseClass):
         self.animateSelf()
         self.animateActiveItem(Screen)
         self.stayOnScreen()
+        self.checkCollision()
 
+    def checkCollision(self):
+        obstacle = pygame.sprite.spritecollideany(self, self.Room.Obstacles)
+        if obstacle: 
+            key = pygame.key.get_pressed()
+            if key[pygame.K_UP]:
+                print ('hit von unten')
+                self.rect.y -= -self.Movementspeed
+            if key[pygame.K_DOWN]:
+                print('hit von oben')
+                self.rect.y -= self.Movementspeed
+            if key[pygame.K_LEFT]:
+                print('hit von rechts')
+                self.rect.x -= -self.Movementspeed
+            if key[pygame.K_RIGHT]:
+                print('hit von links')
+                self.rect.x -= self.Movementspeed
 
     def enterRoom(self, newRoom):
         self.Room = newRoom
@@ -613,6 +630,13 @@ class Gamestate_run:
 
         self.rock1 = Rock(450, 450)
         self.Room1.Obstacles.add(self.rock1)
+        self.rock2 = Rock(150, 450)
+        self.Room1.Obstacles.add(self.rock2)
+
+        print('height rock1:' + str(self.rock1.rect.height))
+        print('width rock1:' + str(self.rock1.rect.width))
+        print('heigt player:' + str(self.player1.rect.height))
+        print('width player:' + str(self.player1.rect.width))
 
     def run(self):
         self.screen.blit(self.image, (0,0))
