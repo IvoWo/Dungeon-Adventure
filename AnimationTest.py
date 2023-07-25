@@ -32,6 +32,7 @@ Sword = Weapon("pictures/Sword1.png",
 FlameSword = Weapon("pictures/FlameSword1.png", 
                     "pictures/FlameSword", "carefull: hot", 
                     2, 200, 50, 50,  
+                    
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")])],
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")]), Image("pictures/FlameSword2.png", [Point(32, 63, "Handle")]), Image("pictures/FlameSword3.png", [Point(27, 54, "Handle")])])
 

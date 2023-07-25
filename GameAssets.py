@@ -13,6 +13,8 @@ class Point():
         100x and 100y equals bottomleft"""
         self.X = X
         self.Y = Y
+        self.XPercent = X
+        self.YPercent = Y
         self.Name = Name
 
 class Image():
@@ -39,7 +41,7 @@ class Face():
         for k, v in self.StatesWithImages.items():
             Images = []
             for I in v:
-                INew = Image(I.PictureFilePath, [Point(P.X, P.Y, P.Name) for P in I.PointsInPicture])
+                INew = Image(I.PictureFilePath, [Point(100/P.XPercent * P.X - P.X, P.Y, P.Name) for P in I.PointsInPicture])
                 INew.Image = pygame.transform.flip(INew.Image, True, False)
                 Images.append(INew)
             FlippedFace[k] = Images
@@ -51,8 +53,8 @@ class Face():
             for Image in v:
                 Image.Image = pygame.transform.scale(Image.Image, (Width, Height))
                 for Point in Image.PointsInPicture:
-                    Point.X *=  Width/100
-                    Point.Y *= Height/100
+                    Point.X = Point.XPercent * Width/100
+                    Point.Y = Point.YPercent * Height/100
                     print(f"{Point.Name}: {Point.X, Point.Y}")
 
 class SpriteBaseClass(pygame.sprite.Sprite):
@@ -78,7 +80,7 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.Left.scaleFace(Width, Height)
         self.Front.scaleFace(Width, Height)
         self.Back.scaleFace(Width, Height)
-        self.CurrentFace.scaleFace(Width, Height)
+        # self.CurrentFace.scaleFace(Width, Height)
         
         self.CurrentImage = Image()
         self.CurrentFace = CurrentFace
@@ -228,7 +230,6 @@ class Player(SpriteBaseClass):
                 for p in [p for p in self.CurrentImage.PointsInPicture if p.Name == "Hand"]:
                     for p2 in [p for p in item.CurrentImage.PointsInPicture if p.Name == "Handle"]:
                         item.rect.topleft = (self.rect.topleft[0] + p.X, self.rect.topleft[1] + p.Y)
-                        print(f"Handle is {p2.X, p2.Y}")
                         item.rect.topleft = (item.rect.topleft[0] - p2.X,item.rect.topleft[1] - p2.Y )
 
                 item.turn(self.CurrentFace.Name)
