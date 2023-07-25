@@ -206,12 +206,11 @@ class Player(SpriteBaseClass):
             self.ActiveItemSlot.remove(self.ActiveItemSlot.sprites()[0])
                 
     def inspectInventory(self):
-        Itemnames = []
-        for Item in self.Inventory:
-            Itemnames.append(Item.Name)
-        for Item in self.ActiveItemSlot:
-            Itemnames.append(Item.Name)
-        return Itemnames
+        for Sprite in Player.Inventory:
+            image = pygame.transform.scale(Sprite.image , (30, 30))
+            iter = Button(self.rect.topright[0], self.rect.topright[1], image, 1)
+            if iter.draw():
+                print('x')
     
     def inspectItem(self, name):
         for Item in self.Inventory:
