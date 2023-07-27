@@ -47,7 +47,7 @@ Room1 = Room('pictures/blackBackground.png')
 
 
 player = pygame.sprite.GroupSingle()
-player1 = Player(Room1)
+player1 = Player(Room1, screen)
 player.add(player1)
 
 
@@ -64,6 +64,12 @@ Room1.Itemlist.add(Sword)
 
 rock1 = Rock(450, 450)
 Room1.Obstacles.add(rock1)
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20)
+
+
+Room1.Enemies.add(Glumanda)
+Room1.Itemlist.add(Sword)
+Room1.Player.add(player1)
 
 # game loop
 run = True
@@ -115,11 +121,7 @@ while run:
                 Music_Playing = 'r'
             screen.blit(background_surf, (0,0))
             # animate groups
-            Room1.draw(screen)
-            player.draw(screen)
-            player.update(screen)
-            #Room1.Itemlist.draw(screen)
-            Room1.Itemlist.update()
+            Room1.update(screen)
 
     pygame.display.update()
     clock.tick(60)

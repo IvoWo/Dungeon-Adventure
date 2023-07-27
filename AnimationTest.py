@@ -36,9 +36,13 @@ FlameSword = Weapon("pictures/FlameSword1.png",
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")])],
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")]), Image("pictures/FlameSword2.png", [Point(32, 63, "Handle")]), Image("pictures/FlameSword3.png", [Point(27, 54, "Handle")])])
 
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20)
+
 FlameSword.rect.center = (100, 100)
 
+Room1.Enemies.add(Glumanda)
 Room1.Itemlist.add(Sword, FlameSword)
+Room1.Player.add(player1)
 
 
 # game loop
@@ -56,10 +60,7 @@ while run:
                         print(MousePosition[0] -s.rect.topleft[0], MousePosition[1] -s.rect.topleft[1]) 
 
     screen.blit(background_surf, (0,0))
-    playerGroup.draw(screen)
-    playerGroup.update(screen)
-    Room1.Itemlist.draw(screen)
-    Room1.Itemlist.update()
+    Room1.update(screen)
 
     pygame.display.update()
     clock.tick(60)

@@ -1,5 +1,6 @@
 from collections import defaultdict
 import random
+from typing import Any
 import pygame
 import math
 from random import randrange
@@ -85,6 +86,8 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.CurrentFace = CurrentFace
         self.CurrentState = CurrentState
     
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        return super().update(*args, **kwargs)
 
 
     def animateSelf(self):
@@ -417,53 +420,69 @@ class Room(SpriteBaseClass):
     Itemlist = pygame.sprite.Group()
     Enemies = pygame.sprite.Group()
     Obstacles = pygame.sprite.Group()
+    Player = pygame.sprite.Group()
 
     def __init__(self, PictureFilePath) -> None:
          super().__init__(PictureFilePath)
          self.generateRoom()
 
-    def draw(self, SCREEN):
+    def update(self, SCREEN):
+        self.Itemlist.update()
+        self.Player.update(SCREEN)
+        self.Enemies.update()
+        self.Obstacles.update()
         self.Itemlist.draw(SCREEN)
         self.Enemies.draw(SCREEN)
         self.Obstacles.draw(SCREEN)
+        self.Player.draw(SCREEN)
 
     def generateRoom(self):
         pass
 
 #noch nicht ingame
-class Itemholder():
-    """A base class for storing item \n
-       Might be for a backpack, the players Inventory and the like"""
-    Itemlist = []
-    
-    def __init__(self, MaxCapacity: int) -> None:
-         self.MaxCapacity = MaxCapacity
-    
-    def addToItemlist(self, Item: Item):
-        if len(self.Itemlist) < self.MaxCapacity:
-            self.Itemlist.append(Item)
-        else:
-            return "is already full"
-    
-    def removeFromItemList(self, Item):
-        self.Itemlist.remove(Item)
-
-#noch nicht ingame
 class Enemy(SpriteBaseClass):
     """A placeholder class for enemys(for now)"""
     
-    def __init__(self, Health, Speed, image, scale, PictureFilePath) -> None:
-        super().__init__(PictureFilePath)
-        self.Health = Health
-        self.Movementspeed = Speed
-        width = image.get_width()
-        height = image.get_height()
-        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
-        self.rect = self.image.get_rect()
+    # def __init__(self, Health, Speed,CurrentRoom: Room, image, scale, PictureFilePath) -> None:
+    #     super().__init__(PictureFilePath)
+    #     self.Health = Health
+    #     self.Movementspeed = Speed
+    #     self.Room = CurrentRoom
 
+    def __init__(self, PictureFilepath: str, 
+                 CurrentRoom : Room,
+                 Width=16, Height=16, 
+                 Health = 10, Movementspeed = 2,
+                 RightFace=Face(), LeftFace=Face(), 
+                 FrontFace=Face(), BackFace=Face(), 
+                 CurrentFace=Face(), CurrentState=State()):
+        super().__init__(PictureFilepath, Width, Height, RightFace, LeftFace, FrontFace, BackFace, CurrentFace, CurrentState)
+        self.Room = CurrentRoom
+        self.Health = Health
+        self.Movementspeed = Movementspeed
 
     def takeDamage(self, Amount):
         Health -= Amount
+
+    def update(self):
+        self.chasePlayer()
+    
+    def chasePlayer(self):
+        DirectionToPlayer = (0, 0)
+        DistanceToPlayer = 0
+        for Player in self.Room.Player:
+            Direction = (Player.rect.center[0] - self.rect.center[0], Player.rect.center[1]- self.rect.center[1])
+            Length =math.sqrt(Direction[0] ** 2 + Direction[1] ** 2)
+            if Length >= DistanceToPlayer:
+                DirectionToPlayer = Direction
+                DistanceToPlayer = Length
+        Frac = DistanceToPlayer/self.Movementspeed
+        if Frac > 0:
+            XSpeed = DirectionToPlayer[0]/Frac
+            YSpeed = DirectionToPlayer[1]/Frac
+            self.rect.x += XSpeed
+            self.rect.y += YSpeed
+
     
 #Button class
 class Button():
