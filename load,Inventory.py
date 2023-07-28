@@ -1,22 +1,24 @@
-import json
-import pickle
+from typing import Any
 from GameAssets import*
 
 pygame.init()
-screen = pygame.display.set_mode((600,600))
 
-class pr:
+Screen = pygame.display.set_mode((600,600))
+
+class Inventory:
     def __init__(self) -> None:
-        pass
+        
+        self.contents = []
+        
 
-class test:
-    def __init__(self, name, testzahl, testbild, pr) -> None:
-        self.name = name
-        self.testzahl = testzahl
-        self.testbild = testbild
-        self.pr = pr
+    def draw(self,screen):
 
-teste = Weapon("pictures/Sword1.png", 
+        for Item in self.contents:
+            print(Item.Name)
+
+inv = Inventory()
+
+i = Weapon("pictures/Sword1.png", 
                 "Sword", "Dangery",
                 1, 200, 23, 23,
                 [Image("pictures/Sword1.png")], 
@@ -27,8 +29,15 @@ teste = Weapon("pictures/Sword1.png",
                 [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")])
 
 
-with open('save/test.txt','wb') as score_file:
-    pickle.dump(teste.__dict__, score_file)
+inv.contents.append(i)
+
+inv.draw(Screen)
+
+
+
+
+
+
 
 
 
