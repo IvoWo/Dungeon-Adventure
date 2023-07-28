@@ -21,7 +21,7 @@ playerGroup.add(player1)
 
 Sword = Weapon("pictures/Sword1.png",
                 "Sword", "Dangery", 
-                1, 5000, 50, 50,
+                1, 200, 50, 50,
                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")]), Image("pictures/Sword2.png", [Point(20, 85, "Handle")]), Image("pictures/Sword3.png", [Point(20, 89, "Handle")])],
                  [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
@@ -31,7 +31,7 @@ Sword = Weapon("pictures/Sword1.png",
 
 FlameSword = Weapon("pictures/FlameSword1.png", 
                     "pictures/FlameSword", "carefull: hot", 
-                    2,  5000,  50, 50,  
+                    2,  400,  50, 50,  
                     
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")])],
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")]), Image("pictures/FlameSword2.png", [Point(32, 63, "Handle")]), Image("pictures/FlameSword3.png", [Point(27, 54, "Handle")])])
