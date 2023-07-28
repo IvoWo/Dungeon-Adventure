@@ -7,7 +7,7 @@ from random import randrange
 import sys
 import json
 
-from pygame.sprite import _Group
+from pygame.sprite import Group
 
 
 class Point():
