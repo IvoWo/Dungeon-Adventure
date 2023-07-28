@@ -16,12 +16,12 @@ background_Main = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Men
 
 Room1 = Room('pictures/blackBackground.png')
 playerGroup = pygame.sprite.GroupSingle()
-player1 = Player(Room1, screen)
+player1 = Player(Room1)
 playerGroup.add(player1)
 
 Sword = Weapon("pictures/Sword1.png",
-                "Sword", "Dangery",
-                1, 200, 50, 50,
+                "Sword", "Dangery", 
+                1, 5000, 50, 50,
                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
                 [Image("pictures/Sword1.png", [Point(19, 87, "Handle")]), Image("pictures/Sword2.png", [Point(20, 85, "Handle")]), Image("pictures/Sword3.png", [Point(20, 89, "Handle")])],
                  [Image("pictures/Sword1.png", [Point(19, 87, "Handle")])], 
@@ -31,17 +31,20 @@ Sword = Weapon("pictures/Sword1.png",
 
 FlameSword = Weapon("pictures/FlameSword1.png", 
                     "pictures/FlameSword", "carefull: hot", 
-                    2, 200, 50, 50,  
+                    2,  5000,  50, 50,  
                     
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")])],
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")]), Image("pictures/FlameSword2.png", [Point(32, 63, "Handle")]), Image("pictures/FlameSword3.png", [Point(27, 54, "Handle")])])
 
-Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20)
+charmanderDeathAnimation = [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png"), 
+                            Image("pictures/charmanderDeath3.png"), Image("pictures/charmanderDeath4.png"), 
+                            Image("pictures/charmanderDeath5.png"), Image("pictures/charmanderDeath6.png")]
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= charmanderDeathAnimation)
 
 FlameSword.rect.center = (100, 100)
 
 Room1.Enemies.add(Glumanda)
-Room1.Itemlist.add(Sword, FlameSword)
+Room1.Itemlist.add( Sword, FlameSword)
 Room1.Player.add(player1)
 
 
