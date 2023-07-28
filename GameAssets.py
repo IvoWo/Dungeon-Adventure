@@ -7,6 +7,8 @@ from random import randrange
 import sys
 import json
 
+from pygame.sprite import _Group
+
 
 class Point():
     def __init__(self, X:int = 0, Y:int = 0, Name:str = "") -> None:
@@ -109,7 +111,18 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         Directions are: right, left, front, back"""
         for Face in [x for x in [self.Back, self.Front, self.Right, self.Left] if x.Name == Direction]:
             self.CurrentFace = Face
-                
+
+class ObstacleBaseClass(SpriteBaseClass):
+    def keepOut(self, ListofGroups : list[pygame.sprite.Group]):
+        for Group in ListofGroups:
+            for Sprite in pygame.sprite.spritecollide(self, Group, False):
+                XDiff = Sprite.rect.centerx - self.rect.centerx
+                YDiff = Sprite.rect.centery - self.rect.centery
+                if abs(XDiff) >= abs(YDiff):
+                    Sprite.rect.move(XDiff, 0)
+                else:
+                    Sprite.rect.move(0, YDiff)
+                    
 
 class Obstacle(SpriteBaseClass):
     def __init__(self, image, x, y) -> None:

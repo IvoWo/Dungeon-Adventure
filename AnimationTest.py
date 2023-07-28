@@ -36,7 +36,10 @@ FlameSword = Weapon("pictures/FlameSword1.png",
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")])],
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")]), Image("pictures/FlameSword2.png", [Point(32, 63, "Handle")]), Image("pictures/FlameSword3.png", [Point(27, 54, "Handle")])])
 
-Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20,2,  DeathAnimationImages= [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png")])
+charmanderDeathAnimation = [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png"), 
+                            Image("pictures/charmanderDeath3.png"), Image("pictures/charmanderDeath4.png"), 
+                            Image("pictures/charmanderDeath5.png"), Image("pictures/charmanderDeath6.png")]
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= charmanderDeathAnimation)
 
 FlameSword.rect.center = (100, 100)
 

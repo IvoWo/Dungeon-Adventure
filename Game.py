@@ -64,7 +64,10 @@ Room1.Itemlist.add(Sword)
 
 rock1 = Rock(450, 450)
 Room1.Obstacles.add(rock1)
-Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png")])
+charmanderDeathAnimation = [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png"), 
+                            Image("pictures/charmanderDeath3.png"), Image("pictures/charmanderDeath4.png"), 
+                            Image("pictures/charmanderDeath5.png"), Image("pictures/charmanderDeath6.png")]
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= charmanderDeathAnimation)
 
 
 Room1.Enemies.add(Glumanda)
