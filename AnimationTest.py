@@ -16,7 +16,7 @@ background_Main = pygame.transform.rotozoom(pygame.image.load('pictures/Main_Men
 
 Room1 = Room('pictures/blackBackground.png')
 playerGroup = pygame.sprite.GroupSingle()
-player1 = Player(Room1, screen)
+player1 = Player(Room1)
 playerGroup.add(player1)
 
 Sword = Weapon("pictures/Sword1.png",
@@ -36,7 +36,7 @@ FlameSword = Weapon("pictures/FlameSword1.png",
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")])],
                     [Image("pictures/FlameSword1.png", [Point(45, 75, "Handle")]), Image("pictures/FlameSword2.png", [Point(32, 63, "Handle")]), Image("pictures/FlameSword3.png", [Point(27, 54, "Handle")])])
 
-Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20)
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20,2,  DeathAnimationImages= [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png")])
 
 FlameSword.rect.center = (100, 100)
 

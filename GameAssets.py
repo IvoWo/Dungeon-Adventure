@@ -27,7 +27,7 @@ class Image():
 
 
 class State():
-    def __init__(self, MillisecondsPerImage = 0) -> None:
+    def __init__(self, MillisecondsPerImage = 200) -> None:
         self.MillisecondsPerImage = MillisecondsPerImage
         self.AnimationStartTime = 0
         self.CurrentImageIndex = 0
@@ -96,12 +96,13 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         TimeDiff =  pygame.time.get_ticks() - self.CurrentState.AnimationStartTime
         if TimeDiff > self.CurrentState.MillisecondsPerImage:
             self.CurrentState.CurrentImageIndex += 1
-            self.CurrentState.AnimationStartTime = 0           
-        if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace.StatesWithImages[self.CurrentState]) : 
-            self.CurrentState.CurrentImageIndex = 0
-        if self.CurrentFace.StatesWithImages[self.CurrentState]:
-            self.CurrentImage = self.CurrentFace.StatesWithImages[self.CurrentState][self.CurrentState.CurrentImageIndex]
-            self.image = self.CurrentImage.Image
+            self.CurrentState.AnimationStartTime = 0
+        if self.CurrentState in self.CurrentFace.StatesWithImages.keys():          
+            if self.CurrentState.CurrentImageIndex >= len(self.CurrentFace.StatesWithImages[self.CurrentState]) : 
+                self.CurrentState.CurrentImageIndex = 0
+            if self.CurrentFace.StatesWithImages[self.CurrentState]:
+                self.CurrentImage = self.CurrentFace.StatesWithImages[self.CurrentState][self.CurrentState.CurrentImageIndex]
+                self.image = self.CurrentImage.Image
 
     def turn(self, Direction: str):
         """a Direction is a string \n
@@ -119,11 +120,42 @@ class Rock(Obstacle):
     def __init__(self, x, y):
         super().__init__("pictures/rock.png", x, y)
 
-class Player(SpriteBaseClass):
+class LivingBeing(SpriteBaseClass):
+    def __init__(self, PictureFilepath: str, 
+                 Width=16, Height=16, 
+                 RightFace=Face(), LeftFace=Face(), 
+                 FrontFace=Face(), BackFace=Face(), 
+                 CurrentFace=Face(), CurrentState=State(), 
+                 Health = 10, DeathAnimationImages : list[Image]= []):
+        super().__init__(PictureFilepath, 
+                         Width, Height, 
+                         RightFace, LeftFace, 
+                         FrontFace, BackFace, 
+                         CurrentFace, CurrentState)
+        self.Health = Health
+        self.PreDeathState = State()
+        self.DeathAnimation = Face("front", {self.PreDeathState: DeathAnimationImages})
+        self.DeathAnimationStartTime = 0
+        self.DeathAnimation.scaleFace(Width, Height)
+
+    def live(self):
+        """call at the end of update to make sure death is not overridden by other states"""
+        if self.Health <= 0 and not self.CurrentState == self.PreDeathState:
+            self.CurrentState = self.PreDeathState
+            self.DeathAnimationStartTime = pygame.time.get_ticks()
+            self.CurrentFace = self.DeathAnimation
+        if self.CurrentState == self.PreDeathState:
+            TimeDiff = pygame.time.get_ticks() - self.DeathAnimationStartTime
+            TimeOfAnimation = len(self.DeathAnimation.StatesWithImages[self.PreDeathState]) * self.PreDeathState.MillisecondsPerImage
+            if TimeDiff >= TimeOfAnimation:
+                print("was killed")
+                self.kill() 
+            
+
+class Player(LivingBeing):
     
     Inventory = pygame.sprite.Group()
     Movementspeed = 3
-    Health = 100
     ActiveItemSlot = pygame.sprite.Group()
     
     
@@ -185,11 +217,13 @@ class Player(SpriteBaseClass):
         # self.Arm.Swing = Swing
 
     def update(self, Screen):
-        self.playerControll()
         self.animateSelf()
         self.animateActiveItem(Screen)
+        if not self.CurrentState == self.PreDeathState:
+            self.playerControll()
         self.stayOnScreen()
         self.checkCollision()
+        self.live()
 
     def checkCollision(self):
         obstacle = pygame.sprite.spritecollideany(self, self.Room.Obstacles)
@@ -228,14 +262,6 @@ class Player(SpriteBaseClass):
             self.Room.Itemlist.add(self.ActiveItemSlot.sprites()[0])
             self.ActiveItemSlot.remove(self.ActiveItemSlot.sprites()[0])
             
-                
-    def inspectInventory(self):
-        for Sprite in Player.Inventory:
-            image = pygame.transform.scale(Sprite.image , (30, 30))
-            iter = Button(self.rect.topright[0], self.rect.topright[1], image, 1)
-            if iter.draw(self.Screen):
-                print('x')
-    
     def inspectItem(self, name):
         for Item in self.Inventory:
             if(Item.Name.str.lower() == name):
@@ -264,7 +290,8 @@ class Player(SpriteBaseClass):
             self.CurrentFace = self.Right
             self.CurrentState = self.Walking
         if keys[pygame.K_e]:
-            self.inspectInventory()
+            # self.inspectInventory()
+            pass
         if keys[pygame.K_q]:
             self.collectItem()
         if keys[pygame.K_d]:
@@ -460,30 +487,30 @@ class Room(SpriteBaseClass):
     def generateRoom(self):
         pass
 
-#noch nicht ingame
-class Enemy(SpriteBaseClass):
-    """A placeholder class for enemys(for now)"""
-    
-    # def __init__(self, Health, Speed,CurrentRoom: Room, image, scale, PictureFilePath) -> None:
-    #     super().__init__(PictureFilePath)
-    #     self.Health = Health
-    #     self.Movementspeed = Speed
-    #     self.Room = CurrentRoom
-
+class Enemy(LivingBeing):
     def __init__(self, PictureFilepath: str, 
                  CurrentRoom : Room,
                  Width=16, Height=16, 
                  Health = 10, Movementspeed = 2,
                  RightFace=Face(), LeftFace=Face(), 
                  FrontFace=Face(), BackFace=Face(), 
-                 CurrentFace=Face(), CurrentState=State()):
-        super().__init__(PictureFilepath, Width, Height, RightFace, LeftFace, FrontFace, BackFace, CurrentFace, CurrentState)
+                 CurrentFace=Face(), CurrentState=State(),
+                 DeathAnimationImages: list[Image] = []):
+        super().__init__(PictureFilepath, 
+                         Width, Height, 
+                         RightFace, LeftFace, 
+                         FrontFace, BackFace, 
+                         CurrentFace, CurrentState, 
+                         Health,DeathAnimationImages)
+                
         self.Room = CurrentRoom
-        self.Health = Health
         self.Movementspeed = Movementspeed
 
     def update(self):
-        self.chasePlayer()
+        self.animateSelf()
+        if not self.CurrentState == self.PreDeathState:
+            self.chasePlayer()
+        self.live()
     
     def chasePlayer(self):
         DirectionToPlayer = (0, 0)

@@ -47,7 +47,7 @@ Room1 = Room('pictures/blackBackground.png')
 
 
 player = pygame.sprite.GroupSingle()
-player1 = Player(Room1, screen)
+player1 = Player(Room1)
 player.add(player1)
 
 
@@ -64,7 +64,7 @@ Room1.Itemlist.add(Sword)
 
 rock1 = Rock(450, 450)
 Room1.Obstacles.add(rock1)
-Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20)
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png")])
 
 
 Room1.Enemies.add(Glumanda)
