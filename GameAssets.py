@@ -124,8 +124,6 @@ class Player(SpriteBaseClass):
     Inventory = pygame.sprite.Group()
     Movementspeed = 3
     Health = 100
-    IsWalking = False
-    WalkStartTime = 0
     ActiveItemSlot = pygame.sprite.Group()
     
     
@@ -296,7 +294,7 @@ class Player(SpriteBaseClass):
                         item.rect.topleft = (item.rect.topleft[0] - p2.X,item.rect.topleft[1] - p2.Y )
 
                 item.turn(self.CurrentFace.Name)
-            self.ActiveItemSlot.update()
+            self.ActiveItemSlot.update(self.Room.Enemies)
             self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
@@ -323,7 +321,6 @@ class Weapon(Item):
     # the hurtBoxGroup contains the sprites of the attack animation
     # for example bullest, checking bullet collision can then be done be checking againt the whole group
     HurtboxGroup = pygame.sprite.Group()
-    AttackStarttime = 0
     Default = State()
     Attacking = State(200)
 
@@ -342,6 +339,7 @@ class Weapon(Item):
                  BackFaceAttackingImages: list[str] = []):
         self.Damage = Damage
         self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
+        self.AttackStarttime = 0
         self.Default = State()
         self.Attacking = State(self.AttackDurationInMilliseconds/len(RightFaceAttackingImages))
         RightDict = {self.Default: RightFaceDefaultImages,
@@ -357,18 +355,41 @@ class Weapon(Item):
         super().__init__(PictureFilePath, 
                          Name, Description, 
                          Width, Height,
-                         RightFace, LeftFace, FrontFace, BackFace, RightFace, self.Attacking)
+                         RightFace, LeftFace, FrontFace, BackFace, RightFace, self.Default)
 
-    def update(self):
+    def update(self, Enemies: pygame.sprite.Group()):
+        # attack might get started by useItem
         self.animateSelf()
-        TimeDiff = pygame.time.get_ticks() - self.AttackStarttime
-        if TimeDiff > self.AttackDurationInMilliseconds:
-            self.CurrentState = self.Default
+        self.dealDamage(Enemies)
+        # ending the attack if attack duration is over
+        if self.CurrentState == self.Attacking:
+            TimeDiff = pygame.time.get_ticks() - self.AttackStarttime
+            if TimeDiff > self.AttackDurationInMilliseconds:
+                self.CurrentState = self.Default
+                # clearing to list of already hit enemies
+                self.CurrentlyHitEnemies.clear()
 
     def useItem(self):
         if not self.CurrentState == self.Attacking: 
             self.AttackStarttime = pygame.time.get_ticks()
             self.CurrentState = self.Attacking
+
+    CurrentlyHitEnemies = []
+    def dealDamage(self, Enemies: pygame.sprite.Group):
+        # can only do damage if is attacking
+        if self.CurrentState == self.Attacking:
+            HitEnemies = pygame.sprite.spritecollide(self, Enemies, False)
+            # removing already hit enemies in this attack sequence to deal damage only once
+            for Enemy1 in self.CurrentlyHitEnemies:
+                if Enemy1 in HitEnemies:
+                    HitEnemies.remove(Enemy1)
+            # dealing damage to remaining Enemies
+            for Enemy2 in HitEnemies:
+                Enemy2.Health -= self.Damage
+            # adding already damaged enemies to list of excluded enemies
+            for Enemy3 in HitEnemies:
+                self.CurrentlyHitEnemies.append(Enemy3)
+
 
 class Map():
     #Map ist für die allgemeine Map - Verbindung der Räume
@@ -428,7 +449,7 @@ class Room(SpriteBaseClass):
          self.generateRoom()
 
     def update(self, SCREEN):
-        self.Itemlist.update()
+        self.Itemlist.update(self.Enemies)
         self.Player.update(SCREEN)
         self.Enemies.update()
         self.Obstacles.update()
@@ -461,9 +482,6 @@ class Enemy(SpriteBaseClass):
         self.Room = CurrentRoom
         self.Health = Health
         self.Movementspeed = Movementspeed
-
-    def takeDamage(self, Amount):
-        Health -= Amount
 
     def update(self):
         self.chasePlayer()
