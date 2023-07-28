@@ -127,8 +127,7 @@ class Player(SpriteBaseClass):
     ActiveItemSlot = pygame.sprite.Group()
     
     
-    def __init__(self, currentRoom, Screen):
-        self.Screen = Screen
+    def __init__(self, currentRoom):
         # Player Animation 
         # States
         self.Default = State(MillisecondsPerImage= 5000)
@@ -642,7 +641,7 @@ class Gamestate_run:
         self.Room1 = Room('pictures/blackBackground.png')
 
         self.player = pygame.sprite.GroupSingle()
-        self.player1 = Player(self.Room1, self.screen)
+        self.player1 = Player(self.Room1)
         self.player.add(self.player1)
 
 
