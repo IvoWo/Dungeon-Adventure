@@ -12,7 +12,7 @@ class Inventory:
     def __init__(self) -> None:
         
         self.contents = []
-        self.slots = {'slot0' : (305,395), 'slot1': (355,395)}
+        self.slots = {'slot0' : (5,195), 'slot1': (55,195), 'slot2': (110,195), 'slot3': (165,195), 'slot4': (220,195)}
 
     def draw(self,screen):
         image = pygame.transform.rotozoom(pygame.image.load('pictures/inventar.png').convert_alpha(), 0, 1)
@@ -25,7 +25,7 @@ class Inventory:
             pic = pygame.transform.scale(Sprite.image,(45,50))
             slot = ('slot' + str(x))
             w = self.slots[slot]
-            disp = Button(w[0], w[1], pic, 1)
+            disp = Button(w[0] + rect.topleft[0], w[1] + rect.topleft[1], pic, 1)
             disp.draw(screen)
             x +=1
 
@@ -47,14 +47,17 @@ i = Weapon("pictures/Sword1.png",
                 [Image("pictures/Sword1.png")],
                 [Image("pictures/Sword1.png"), Image("pictures/Sword2.png"), Image("pictures/Sword3.png")])
 
-it2 = FlameSword = Weapon("pictures/FlameSword1.png", 
+it2 = Weapon("pictures/FlameSword1.png", 
                     "pictures/FlameSword", "carefull: hot", 
                     2, 200, 150, 150, 
                     [Image("pictures/FlameSword1.png")],
                     [Image("pictures/FlameSword1.png"), Image("pictures/FlameSword2.png"), Image("pictures/FlameSword3.png")])
 
+it3 = Item('pictures/charmander.jpg', 'glumanda', 'firetype',16,16)
+
 inv.contents.append(i)
 inv.contents.append(it2)
+inv.contents.append(it3)
 
 while True:
     for event in pygame.event.get():

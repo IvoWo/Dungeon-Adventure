@@ -9,7 +9,6 @@ import json
 
 from pygame.sprite import Group
 
-
 class Point():
     def __init__(self, X:int = 0, Y:int = 0, Name:str = "") -> None:
         """X and Y are the percent of topleft to bottemright \n
