@@ -7,7 +7,24 @@ from random import randrange
 import sys
 import json
 
-from pygame.sprite import Group
+
+def keepOut(self :pygame.sprite.Sprite, ListofGroups : list[pygame.sprite.Group]):
+    for Group in ListofGroups:
+        Sprites = pygame.sprite.spritecollide(self, Group, False)
+        for Sprite in Sprites:
+            XDiff = Sprite.rect.centerx - self.rect.centerx
+            YDiff = Sprite.rect.centery - self.rect.centery
+            if abs(XDiff) >= abs(YDiff):
+                if XDiff >= 0:
+                    Sprite.rect.left = self.rect.right
+                else:
+                    Sprite.rect.right = self.rect.left
+            else:
+                if YDiff >= 0:
+                    Sprite.rect.top = self.rect.bottom
+                else:
+                    Sprite.rect.bottom = self.rect.top
+                
 
 
 class Point():
@@ -74,7 +91,7 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.Left = LeftFace
         self.Front = FrontFace
         self.Back = BackFace
-
+        
         self.CurrentFace = CurrentFace
         self.CurrentState = CurrentState
 
@@ -111,18 +128,6 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         Directions are: right, left, front, back"""
         for Face in [x for x in [self.Back, self.Front, self.Right, self.Left] if x.Name == Direction]:
             self.CurrentFace = Face
-
-class ObstacleBaseClass(SpriteBaseClass):
-    def keepOut(self, ListofGroups : list[pygame.sprite.Group]):
-        for Group in ListofGroups:
-            for Sprite in pygame.sprite.spritecollide(self, Group, False):
-                XDiff = Sprite.rect.centerx - self.rect.centerx
-                YDiff = Sprite.rect.centery - self.rect.centery
-                if abs(XDiff) >= abs(YDiff):
-                    Sprite.rect.move(XDiff, 0)
-                else:
-                    Sprite.rect.move(0, YDiff)
-                    
 
 class Obstacle(SpriteBaseClass):
     def __init__(self, image, x, y) -> None:
@@ -161,7 +166,6 @@ class LivingBeing(SpriteBaseClass):
             TimeDiff = pygame.time.get_ticks() - self.DeathAnimationStartTime
             TimeOfAnimation = len(self.DeathAnimation.StatesWithImages[self.PreDeathState]) * self.PreDeathState.MillisecondsPerImage
             if TimeDiff >= TimeOfAnimation:
-                print("was killed")
                 self.kill() 
             
 
@@ -232,6 +236,7 @@ class Player(LivingBeing):
     def update(self, Screen):
         self.animateSelf()
         self.animateActiveItem(Screen)
+        keepOut(self, [self.Room.Enemies])
         if not self.CurrentState == self.PreDeathState:
             self.playerControll()
         self.stayOnScreen()
@@ -521,6 +526,7 @@ class Enemy(LivingBeing):
 
     def update(self):
         self.animateSelf()
+        keepOut(self, [self.Room.Player])
         if not self.CurrentState == self.PreDeathState:
             self.chasePlayer()
         self.live()
