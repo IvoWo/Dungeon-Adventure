@@ -40,6 +40,8 @@ charmanderDeathAnimation = [Image("pictures/charmanderDeath1.png"), Image("pictu
                             Image("pictures/charmanderDeath5.png"), Image("pictures/charmanderDeath6.png")]
 Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= charmanderDeathAnimation)
 
+TestItem = Item("pictures/FlameSword1.png", "Item", "test")
+
 FlameSword.rect.center = (100, 100)
 
 Room1.Enemies.add(Glumanda)

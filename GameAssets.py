@@ -343,9 +343,9 @@ class Player(LivingBeing):
 
 class Item(SpriteBaseClass):
     def __init__(self, PictureFilepath: str, 
-                 Name :str, Description : str, 
+                 Name = "", Description = "", 
                  Width=16, Height=16, 
-                 RightFace=Face(), LeftFace=Face, 
+                 RightFace=Face(), LeftFace=Face(), 
                  FrontFace=Face(), BackFace=Face(), 
                  CurrentFace=Face(), CurrentState=State()):
         super().__init__(PictureFilepath, 
@@ -354,6 +354,7 @@ class Item(SpriteBaseClass):
                          FrontFace, BackFace, 
                          CurrentFace, CurrentState)
         self.Name = Name
+        self.Description = Description
     def getItemPictureFilePath(self):
         return self.PictureFilepath
     
