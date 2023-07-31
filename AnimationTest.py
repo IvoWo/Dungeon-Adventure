@@ -38,14 +38,16 @@ FlameSword = Weapon("pictures/FlameSword1.png",
 charmanderDeathAnimation = [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png"), 
                             Image("pictures/charmanderDeath3.png"), Image("pictures/charmanderDeath4.png"), 
                             Image("pictures/charmanderDeath5.png"), Image("pictures/charmanderDeath6.png")]
-Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,  DeathAnimationImages= charmanderDeathAnimation)
+Glumanda = Enemy("pictures/charmander.jpg",Room1, 20, 20, 4,2,  DeathAnimationImages= charmanderDeathAnimation)
 
-TestItem = Item("pictures/FlameSword1.png", "Item", "test")
+TestProjectile = Projectile("pictures/FlameSword1.png", 6, 1, (1, 1), 100 )
 
+
+TestProjectile.rect.center = (300, 300)
 FlameSword.rect.center = (100, 100)
 
 Room1.Enemies.add(Glumanda)
-Room1.Itemlist.add( Sword, FlameSword)
+Room1.Itemlist.add( Sword, FlameSword, TestProjectile)
 Room1.Player.add(player1)
 
 
