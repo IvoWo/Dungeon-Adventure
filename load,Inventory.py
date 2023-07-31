@@ -16,7 +16,7 @@ class Inventory:
         self.slots = {'slot0': (327, 420), 'slot1': (377, 420), 'slot2': (432, 420), 'slot3': (487, 420), 'slot4': (542, 420),
                       'slot5': (327, 475), 'slot6': (377, 475), 'slot7': (432, 475), 'slot8': (487, 475), 'slot9': (542, 475),
                       'slots10': (327, 525), 'slot11': (377, 525), 'slots12': (432, 525), 'slots13': (487, 525), 'slots14': (542, 525),
-                      'weapon': (517, 360), 'potion': (347, 250), 'amulet': (347, 305), 'ofhand': (347, 360), 'helmet': (517, 250), 'armor': (517, 360)}
+                      'weapon': (517, 360), 'potion': (347, 250), 'amulet': (347, 305), 'ofhand': (347, 360), 'helmet': (517, 250), 'armor': (517, 305)}
 
         self.image = pygame.transform.rotozoom(pygame.image.load('pictures/inventar.png').convert_alpha(), 0, 1)
         self.rect = self.image.get_rect()
