@@ -74,6 +74,7 @@ class Inventory:
         x, y = self.slot_positions[len(self.item_buttons)]  # Get next available slot position
         scaled_image = pygame.transform.scale(item.image, (45, 50))
         button = InventoryItemButton(x, y, scaled_image, 1.0)  # Scale of 1.0 to keep the original size
+        button.initial_pos = (x, y)
         # Add the button to the item_buttons list
         self.item_buttons.append(button)
 
@@ -101,8 +102,12 @@ class Inventory:
                 if distance < min_distance:
                     min_distance = distance
                     nearest_slot = slot_pos
+                for button in self.item_buttons:
+                    if button.rect.center == nearest_slot:
+                        button.rect.center = self.dragged_item.initial_pos
 
             self.dragged_item.rect.center = nearest_slot
+            self.dragged_item.initial_pos = nearest_slot
             self.dragged_item = None
 
 inv = Inventory(1,screen)
