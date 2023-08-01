@@ -8,6 +8,45 @@ screen = pygame.display.set_mode(ScreenSize)
 pygame.display.set_caption('Dungeon-Adventure')
 clock = pygame.time.Clock()
 
+class InventoryItemButton:
+    def __init__(self, x, y, image, scale=1.0) -> None:
+        width = image.get_width()
+        height = image.get_height()
+        self.image = pygame.transform.scale(image, (int(width * scale), int(height * scale)))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.initial_pos = (x, y)  # Store the initial position of the button
+        self.current_pos = (x, y)  # Store the current position of the button
+        self.is_dragged = False
+        self.prev_mouse_state = False
+
+    def draw(self, surface):
+        action = False
+
+        # get mouse position
+        pos = pygame.mouse.get_pos()
+        mouse_state = pygame.mouse.get_pressed()[0] == 1
+
+        # Check if mouse is over the button
+        if self.rect.collidepoint(pos):
+            # Check if mouse button is pressed down
+            if mouse_state and not self.prev_mouse_state:
+                self.is_dragged = True
+
+            # Check if mouse button is released
+            if not mouse_state and self.prev_mouse_state:
+                if self.is_dragged:
+                    action = True
+                self.is_dragged = False
+
+        # draw button on screen
+        surface.blit(self.image, (self.rect.x, self.rect.y))
+
+        # Update previous mouse state
+        self.prev_mouse_state = mouse_state
+
+        return action
+    
 class Inventory:
     def __init__(self, room, screen) -> None:
         self.screen = screen
@@ -34,7 +73,7 @@ class Inventory:
         # Create a new button instance with the item's image, scaled to 45x50 pixels
         x, y = self.slot_positions[len(self.item_buttons)]  # Get next available slot position
         scaled_image = pygame.transform.scale(item.image, (45, 50))
-        button = Button(x, y, scaled_image, 1.0)  # Scale of 1.0 to keep the original size
+        button = InventoryItemButton(x, y, scaled_image, 1.0)  # Scale of 1.0 to keep the original size
         # Add the button to the item_buttons list
         self.item_buttons.append(button)
 
@@ -44,7 +83,7 @@ class Inventory:
         pos = pygame.mouse.get_pos()
 
         for button in self.item_buttons:
-            if button.rect.collidepoint(pos) and button.clicked:
+            if button.rect.collidepoint(pos) and button.is_dragged:
                 self.dragged_item = button
 
             # Draw the button at its respective position
@@ -99,6 +138,6 @@ while True:
      
     pos = pygame.mouse.get_pos()
     Room1.update(screen)
-    print(pos)
+    #print(pos)
     pygame.display.update()
     clock.tick(60)
