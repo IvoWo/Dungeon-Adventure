@@ -7,7 +7,35 @@ from random import randrange
 import sys
 import json
 
-from pygame.sprite import Group
+
+def scaleVectorToLength(TargetLength = 0, Vector = (0, 0)):
+    Length = math.sqrt(Vector[0] ** 2 + Vector[1] ** 2)
+    if TargetLength > 0 and Length > 0:
+        Frac = Length/TargetLength
+        X = Vector[0]/Frac
+        Y = Vector[1]/Frac
+        return (X, Y)
+    else: 
+        return (0, 0) 
+        
+
+def keepOut(self :pygame.sprite.Sprite, ListofGroups : list[pygame.sprite.Group]):
+    for Group in ListofGroups:
+        Sprites = pygame.sprite.spritecollide(self, Group, False)
+        for Sprite in Sprites:
+            XDiff = Sprite.rect.centerx - self.rect.centerx
+            YDiff = Sprite.rect.centery - self.rect.centery
+            if abs(XDiff) >= abs(YDiff):
+                if XDiff >= 0:
+                    Sprite.rect.left = self.rect.right
+                else:
+                    Sprite.rect.right = self.rect.left
+            else:
+                if YDiff >= 0:
+                    Sprite.rect.top = self.rect.bottom
+                else:
+                    Sprite.rect.bottom = self.rect.top
+                
 
 class Point():
     def __init__(self, X:int = 0, Y:int = 0, Name:str = "") -> None:
@@ -73,7 +101,7 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         self.Left = LeftFace
         self.Front = FrontFace
         self.Back = BackFace
-
+        
         self.CurrentFace = CurrentFace
         self.CurrentState = CurrentState
 
@@ -110,18 +138,6 @@ class SpriteBaseClass(pygame.sprite.Sprite):
         Directions are: right, left, front, back"""
         for Face in [x for x in [self.Back, self.Front, self.Right, self.Left] if x.Name == Direction]:
             self.CurrentFace = Face
-
-class ObstacleBaseClass(SpriteBaseClass):
-    def keepOut(self, ListofGroups : list[pygame.sprite.Group]):
-        for Group in ListofGroups:
-            for Sprite in pygame.sprite.spritecollide(self, Group, False):
-                XDiff = Sprite.rect.centerx - self.rect.centerx
-                YDiff = Sprite.rect.centery - self.rect.centery
-                if abs(XDiff) >= abs(YDiff):
-                    Sprite.rect.move(XDiff, 0)
-                else:
-                    Sprite.rect.move(0, YDiff)
-                    
 
 class Obstacle(SpriteBaseClass):
     def __init__(self, image, x, y) -> None:
@@ -160,7 +176,6 @@ class LivingBeing(SpriteBaseClass):
             TimeDiff = pygame.time.get_ticks() - self.DeathAnimationStartTime
             TimeOfAnimation = len(self.DeathAnimation.StatesWithImages[self.PreDeathState]) * self.PreDeathState.MillisecondsPerImage
             if TimeDiff >= TimeOfAnimation:
-                print("was killed")
                 self.kill() 
             
 
@@ -231,28 +246,11 @@ class Player(LivingBeing):
     def update(self, Screen):
         self.animateSelf()
         self.animateActiveItem(Screen)
+        keepOut(self, [self.Room.Enemies])
         if not self.CurrentState == self.PreDeathState:
             self.playerControll()
         self.stayOnScreen()
-        self.checkCollision()
         self.live()
-
-    def checkCollision(self):
-        obstacle = pygame.sprite.spritecollideany(self, self.Room.Obstacles)
-        if obstacle: 
-            key = pygame.key.get_pressed()
-            if key[pygame.K_UP]:
-                print ('hit von unten')
-                self.rect.y -= -self.Movementspeed
-            if key[pygame.K_DOWN]:
-                print('hit von oben')
-                self.rect.y -= self.Movementspeed
-            if key[pygame.K_LEFT]:
-                print('hit von rechts')
-                self.rect.x -= -self.Movementspeed
-            if key[pygame.K_RIGHT]:
-                print('hit von links')
-                self.rect.x -= self.Movementspeed
 
     def enterRoom(self, newRoom):
         self.Room = newRoom
@@ -285,20 +283,22 @@ class Player(LivingBeing):
     def playerControll(self):
         self.CurrentState = self.Default
         keys = pygame.key.get_pressed()
+        X = 0
+        Y = 0
         if keys[pygame.K_UP]:
-            self.rect.y += -self.Movementspeed
+            Y = -1
             self.CurrentFace = self.Back
             self.CurrentState = self.Walking
         if keys[pygame.K_DOWN]:
-            self.rect.y += self.Movementspeed
+            Y = 1
             self.CurrentFace = self.Front
             self.CurrentState = self.Walking
         if keys[pygame.K_LEFT]:
-            self.rect.x += -self.Movementspeed
+            X = -1
             self.CurrentFace = self.Left
             self.CurrentState = self.Walking
         if keys[pygame.K_RIGHT]:
-            self.rect.x += self.Movementspeed
+            X = 1
             self.CurrentFace = self.Right
             self.CurrentState = self.Walking
         if keys[pygame.K_e]:
@@ -311,6 +311,8 @@ class Player(LivingBeing):
         if keys[pygame.K_a]:
             for Item in self.ActiveItemSlot:
                 Item.useItem()
+        MoveBy = scaleVectorToLength(self.Movementspeed, (X, Y))
+        self.rect.move_ip(MoveBy[0], MoveBy[1])
 
     def stayOnScreen(self):
         '''prevents from leaving the screen'''
@@ -337,9 +339,9 @@ class Player(LivingBeing):
 
 class Item(SpriteBaseClass):
     def __init__(self, PictureFilepath: str, 
-                 Name :str, Description : str, 
+                 Name = "", Description = "", 
                  Width=16, Height=16, 
-                 RightFace=Face(), LeftFace=Face, 
+                 RightFace=Face(), LeftFace=Face(), 
                  FrontFace=Face(), BackFace=Face(), 
                  CurrentFace=Face(), CurrentState=State()):
         super().__init__(PictureFilepath, 
@@ -348,6 +350,7 @@ class Item(SpriteBaseClass):
                          FrontFace, BackFace, 
                          CurrentFace, CurrentState)
         self.Name = Name
+        self.Description = Description
     def getItemPictureFilePath(self):
         return self.PictureFilepath
     
@@ -427,6 +430,35 @@ class Weapon(Item):
             # adding already damaged enemies to list of excluded enemies
             for Enemy3 in HitEnemies:
                 self.CurrentlyHitEnemies.append(Enemy3)
+    
+    def shoot(self):
+        if self.CurrentState == self.Attacking:
+            pass
+
+class Projectile(SpriteBaseClass):
+    def __init__(self, PictureFilepath: str, 
+                 Speed = 10, Damage = 1, 
+                 Direction = (0, 0),
+                 DeleteAfterXHits = 1,
+                 Width=16, Height=16):
+        self.Speed = Speed
+        self.Damage = Damage
+        self.DeleteAfterXHits = DeleteAfterXHits
+        self.Direction = scaleVectorToLength(Speed, Direction)
+        super().__init__(PictureFilepath, Width, Height)
+    
+    AlreadyHitCount = 0
+    def hit(self, Enemies: pygame.sprite.Group):
+        HitEnemies = pygame.sprite.spritecollide(self, Enemies, False)
+        for Enemy in HitEnemies:
+            Enemy.Health -= self.Damage
+            self.AlreadyHitCount += 1
+            if self.AlreadyHitCount >= self.DeleteAfterXHits:
+                self.kill()
+
+    def update(self, Enemies):
+        self.rect.move_ip(self.Direction[0], self.Direction[1])
+        self.hit(Enemies)
 
 
 class Map():
@@ -520,26 +552,16 @@ class Enemy(LivingBeing):
 
     def update(self):
         self.animateSelf()
+        keepOut(self, [self.Room.Player])
         if not self.CurrentState == self.PreDeathState:
             self.chasePlayer()
         self.live()
     
     def chasePlayer(self):
-        DirectionToPlayer = (0, 0)
-        DistanceToPlayer = 0
         for Player in self.Room.Player:
-            Direction = (Player.rect.center[0] - self.rect.center[0], Player.rect.center[1]- self.rect.center[1])
-            Length =math.sqrt(Direction[0] ** 2 + Direction[1] ** 2)
-            if Length >= DistanceToPlayer:
-                DirectionToPlayer = Direction
-                DistanceToPlayer = Length
-        Frac = DistanceToPlayer/self.Movementspeed
-        if Frac > 0:
-            XSpeed = DirectionToPlayer[0]/Frac
-            YSpeed = DirectionToPlayer[1]/Frac
-            self.rect.x += XSpeed
-            self.rect.y += YSpeed
-
+            Direction = (Player.rect.centerx - self.rect.centerx, Player.rect.centery- self.rect.centery)
+            Direction = scaleVectorToLength(self.Movementspeed, Direction)
+            self.rect.move_ip(Direction[0], Direction[1])
     
 #Button class
 class Button():
