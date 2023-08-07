@@ -78,6 +78,9 @@ class Inventory:
         # Add the button to the item_buttons list
         self.item_buttons.append(button)
 
+    def deleteItem(self, Item):
+        self.item_buttons.remove(Item)
+
     def draw(self):
         self.screen.blit(self.image, (self.rect.x, self.rect.y))
 
@@ -94,20 +97,23 @@ class Inventory:
             self.dragged_item.rect.center = pos
 
         if not pygame.mouse.get_pressed()[0] and self.dragged_item:
-            min_distance = float('inf')
-            nearest_slot = None
+            if not self.rect.collidepoint((self.dragged_item.rect.center)):
+                self.deleteItem(self.dragged_item)
+            else:
+                min_distance = float('inf')
+                nearest_slot = None
 
-            for slot_pos in self.slot_positions:
-                distance = pygame.math.Vector2(slot_pos).distance_to(self.dragged_item.rect.center)
-                if distance < min_distance:
-                    min_distance = distance
-                    nearest_slot = slot_pos
-                for button in self.item_buttons:
-                    if button.rect.center == nearest_slot:
-                        button.rect.center = self.dragged_item.initial_pos
+                for slot_pos in self.slot_positions:
+                    distance = pygame.math.Vector2(slot_pos).distance_to(self.dragged_item.rect.center)
+                    if distance < min_distance:
+                        min_distance = distance
+                        nearest_slot = slot_pos
+                    for button in self.item_buttons:
+                        if button.rect.center == nearest_slot:
+                            button.rect.center = self.dragged_item.initial_pos
 
-            self.dragged_item.rect.center = nearest_slot
-            self.dragged_item.initial_pos = nearest_slot
+                self.dragged_item.rect.center = nearest_slot
+                self.dragged_item.initial_pos = nearest_slot
             self.dragged_item = None
 
 inv = Inventory(1,screen)
@@ -144,5 +150,6 @@ while True:
     pos = pygame.mouse.get_pos()
     Room1.update(screen)
     #print(pos)
+    screen.blit(backimage,(0,0))
     pygame.display.update()
     clock.tick(60)
