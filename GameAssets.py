@@ -38,7 +38,6 @@ def keepOut(self :pygame.sprite.Sprite, ListofGroups : list[pygame.sprite.Group]
                     Sprite.rect.bottom = self.rect.top
                 
 
-
 class Point():
     def __init__(self, X:int = 0, Y:int = 0, Name:str = "") -> None:
         """X and Y are the percent of topleft to bottemright \n
@@ -749,6 +748,8 @@ class Gamestate_run:
         self.player1 = Player(self.Room1)
         self.player.add(self.player1)
 
+        self.Room1.Player.add(self.player1)
+
 
         self.Sword = Weapon("pictures/Sword1.png", 
                 "Sword", "Dangery",
@@ -766,6 +767,13 @@ class Gamestate_run:
                     [Image("pictures/FlameSword1.png")],
                     [Image("pictures/FlameSword1.png"), Image("pictures/FlameSword2.png"), Image("pictures/FlameSword3.png")])
         self.FlameSword.rect.center = (10, 50)
+
+        charmanderDeathAnimation = [Image("pictures/charmanderDeath1.png"), Image("pictures/charmanderDeath2.png"), 
+                            Image("pictures/charmanderDeath3.png"), Image("pictures/charmanderDeath4.png"), 
+                            Image("pictures/charmanderDeath5.png"), Image("pictures/charmanderDeath6.png")]
+        Glumanda = Enemy("pictures/charmander.jpg",self.Room1, 20, 20, 4,  DeathAnimationImages= charmanderDeathAnimation)
+        
+        self.Room1.Enemies.add(Glumanda)
 
         self.Room1.Itemlist.add(self.Sword, self.FlameSword)
 
@@ -795,11 +803,11 @@ class Gamestate_run:
                 pygame.mixer.music.load('Sounds/Running_Sound.wav')
                 pygame.mixer.music.play(-1)
 
-            self.Room1.draw(self.screen)
-            self.player.draw(self.screen)
-            self.player.update(self.screen)
+            self.Room1.update(self.screen)
+            #self.player.draw(self.screen)
+            #self.player.update(self.screen)
             #Room1.Itemlist.draw(screen)
-            self.Room1.Itemlist.update()
+            #self.Room1.Itemlist.update()
 
         else:
             if (self.options == False):
