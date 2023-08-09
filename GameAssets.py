@@ -6,6 +6,7 @@ import math
 from random import randrange
 import sys
 import json
+from copy import deepcopy
 
 
 def scaleVectorToLength(TargetLength = 0, Vector = (0, 0)):
@@ -54,6 +55,20 @@ class Image():
         self.PointsInPicture = PointsInPicture
         try: self.Image = pygame.image.load(self.PictureFilePath).convert_alpha()
         except: self.Image = pygame.Surface((16,16))
+    
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if isinstance(v, pygame.surface.Surface):
+                try:
+                    setattr(result, k , pygame.image.load(self.PictureFilePath).convert_alpha())
+                except: 
+                    setattr(result, k , pygame.Surface((16,16)))
+            else:
+                setattr(result, k, deepcopy(v, memo))
+        return result
 
 
 class State():
@@ -88,14 +103,14 @@ class Face():
                     Point.Y = Point.YPercent * Height/100
 
 class SpriteBaseClass(pygame.sprite.Sprite):
-
-    def __init__(self, PictureFilepath: str,
+    def __init__(self, PictureFilePath: str,
                  Width = 16, Height = 16,
                  RightFace = Face(), LeftFace= Face(), 
                  FrontFace = Face(), BackFace = Face(), 
                  CurrentFace = Face(), CurrentState = State()):
         super().__init__()
-        self.image = pygame.transform.scale(pygame.image.load(PictureFilepath).convert_alpha(), (Width, Height))
+        self.PictureFilePath = PictureFilePath
+        self.image = pygame.transform.scale(pygame.image.load(PictureFilePath).convert_alpha(), (Width, Height))
         self.rect = self.image.get_rect()
 
         self.Right = RightFace
@@ -119,6 +134,16 @@ class SpriteBaseClass(pygame.sprite.Sprite):
     def update(self, *args: Any, **kwargs: Any) -> None:
         return super().update(*args, **kwargs)
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            if isinstance(v, pygame.surface.Surface):
+                setattr(result, k , pygame.image.load(self.PictureFilePath).convert_alpha())
+            else:
+                setattr(result, k, deepcopy(v, memo))
+        return result
 
     def animateSelf(self):
         if self.CurrentState.AnimationStartTime == 0:
@@ -335,7 +360,7 @@ class Player(LivingBeing):
                         item.rect.topleft = (item.rect.topleft[0] - p2.X,item.rect.topleft[1] - p2.Y )
 
                 item.turn(self.CurrentFace.Name)
-            self.ActiveItemSlot.update(self.Room.Enemies)
+            self.ActiveItemSlot.update(self.Room.Enemies, Screen)
             self.ActiveItemSlot.draw(Screen)
 
 class Item(SpriteBaseClass):
@@ -358,6 +383,32 @@ class Item(SpriteBaseClass):
     def useItem(self):
         pass
 
+class Projectile(SpriteBaseClass):
+    def __init__(self, PictureFilepath: str, 
+                 Speed = 10, Damage = 1, 
+                 Direction = (0, 0),
+                 DeleteAfterXHits = 1,
+                 Width=16, Height=16):
+        self.Speed = Speed
+        self.Damage = Damage
+        self.DeleteAfterXHits = DeleteAfterXHits
+        self.Direction = scaleVectorToLength(Speed, Direction)
+        super().__init__(PictureFilepath, Width, Height)
+    
+    
+    AlreadyHitCount = 0
+    def hit(self, Enemies: pygame.sprite.Group):
+        HitEnemies = pygame.sprite.spritecollide(self, Enemies, False)
+        for Enemy in HitEnemies:
+            Enemy.Health -= self.Damage
+            self.AlreadyHitCount += 1
+            if self.AlreadyHitCount >= self.DeleteAfterXHits:
+                self.kill()
+
+    def update(self, Enemies):
+        self.rect.move_ip(self.Direction[0], self.Direction[1])
+        self.hit(Enemies)
+
 class Weapon(Item):
     
     # the hurtBoxGroup contains the sprites of the attack animation
@@ -378,7 +429,9 @@ class Weapon(Item):
                  FrontFaceDefaultImages: list[str] = [],
                  FrontFaceAttackingImages: list[str] = [], 
                  BackFaceDefaultImages: list[str] = [],
-                 BackFaceAttackingImages: list[str] = []):
+                 BackFaceAttackingImages: list[str] = [], 
+                 Projectile : Projectile = False):
+        self.Projectile = Projectile
         self.Damage = Damage
         self.AttackDurationInMilliseconds = AttackDurationInMilliseconds
         self.AttackStarttime = 0
@@ -399,10 +452,15 @@ class Weapon(Item):
                          Width, Height,
                          RightFace, LeftFace, FrontFace, BackFace, RightFace, self.Default)
 
-    def update(self, Enemies: pygame.sprite.Group()):
+    def update(self, Enemies: pygame.sprite.Group(), Screen):
         # attack might get started by useItem
         self.animateSelf()
-        self.dealDamage(Enemies)
+        if self.Projectile:
+            self.attackRanged()
+        else:
+            self.attackMelee(Enemies)
+        self.Projectiles.update(Enemies)
+        self.Projectiles.draw(Screen)
         # ending the attack if attack duration is over
         if self.CurrentState == self.Attacking:
             TimeDiff = pygame.time.get_ticks() - self.AttackStarttime
@@ -410,6 +468,8 @@ class Weapon(Item):
                 self.CurrentState = self.Default
                 # clearing to list of already hit enemies
                 self.CurrentlyHitEnemies.clear()
+                self.TimesOfShots = 0
+
 
     def useItem(self):
         if not self.CurrentState == self.Attacking: 
@@ -417,7 +477,7 @@ class Weapon(Item):
             self.CurrentState = self.Attacking
 
     CurrentlyHitEnemies = []
-    def dealDamage(self, Enemies: pygame.sprite.Group):
+    def attackMelee(self, Enemies: pygame.sprite.Group):
         # can only do damage if is attacking
         if self.CurrentState == self.Attacking:
             HitEnemies = pygame.sprite.spritecollide(self, Enemies, False)
@@ -431,35 +491,18 @@ class Weapon(Item):
             # adding already damaged enemies to list of excluded enemies
             for Enemy3 in HitEnemies:
                 self.CurrentlyHitEnemies.append(Enemy3)
-    
-    def shoot(self):
-        if self.CurrentState == self.Attacking:
-            pass
-
-class Projectile(SpriteBaseClass):
-    def __init__(self, PictureFilepath: str, 
-                 Speed = 10, Damage = 1, 
-                 Direction = (0, 0),
-                 DeleteAfterXHits = 1,
-                 Width=16, Height=16):
-        self.Speed = Speed
-        self.Damage = Damage
-        self.DeleteAfterXHits = DeleteAfterXHits
-        self.Direction = scaleVectorToLength(Speed, Direction)
-        super().__init__(PictureFilepath, Width, Height)
-    
-    AlreadyHitCount = 0
-    def hit(self, Enemies: pygame.sprite.Group):
-        HitEnemies = pygame.sprite.spritecollide(self, Enemies, False)
-        for Enemy in HitEnemies:
-            Enemy.Health -= self.Damage
-            self.AlreadyHitCount += 1
-            if self.AlreadyHitCount >= self.DeleteAfterXHits:
-                self.kill()
-
-    def update(self, Enemies):
-        self.rect.move_ip(self.Direction[0], self.Direction[1])
-        self.hit(Enemies)
+                
+    Projectiles = pygame.sprite.Group()
+    TimesOfShots = 0
+    def attackRanged(self):
+        if self.CurrentState == self.Attacking and self.TimesOfShots == 0:
+            NewProjectile = deepcopy(self.Projectile)
+            Direction = (pygame.mouse.get_pos()[0] - self.rect.centerx, pygame.mouse.get_pos()[1] - self.rect.centery )
+            Direction = scaleVectorToLength(NewProjectile.Speed, Direction)
+            NewProjectile.Direction = Direction
+            NewProjectile.rect.center = self.rect.center
+            self.Projectiles.add(NewProjectile)
+            self.TimesOfShots += 1
 
 
 class Map():
@@ -520,7 +563,7 @@ class Room(SpriteBaseClass):
          self.generateRoom()
 
     def update(self, SCREEN):
-        self.Itemlist.update(self.Enemies)
+        self.Itemlist.update(self.Enemies, SCREEN)
         self.Player.update(SCREEN)
         self.Enemies.update()
         self.Obstacles.update()
