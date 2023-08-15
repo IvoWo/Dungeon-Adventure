@@ -1,7 +1,20 @@
 !!Disclaimer!! 
-    provisional Story(in english for the lol'z) subject to change
+    provisional Story(in english for ze lol'z) subject to change
     (if you dont like it go yell at the head of design)
 
-Dungeon Adventure takes Place in a medival world with magic(classic).
-The protagonist is sent into the world to defeat dungeonsand beat the 
-RED COWLS, who are up to no good.
+The world of Aidono is in grave danger. 
+Evil forces gather minions and forge alliences to threaten everything that is. 
+The conglomerate, a group consisting of the leaders of the diffrent organisations is leading 
+this disasterous mix of monstersand evildoers. Their plan is unknown to all but the top members 
+of the organisation, but on can be shure that it will have disasterous concequences
+for the world. You are a young adventurer who has to conquer the lairs of the members of the 
+conglomerate and pice together their evil plan and, in the end, put an end to their schemes.
+
+Act I 
+The Beginning
+
+The game starts with a cutscene where the abovementioned is shown.
+The player is then placed on a world map where he is explained the basics 
+(how to choose a dungeon, how to get to the shop)
+
+Then the player can choose the first dungeon. 
